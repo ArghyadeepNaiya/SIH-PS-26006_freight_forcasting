@@ -46,10 +46,19 @@ def compute(candidate, cap, tce_usd_per_day, overrides=None, cargo_type=None,
     idle_days = wait_days + weather_days
     total_days = sea_days + load_days + disch_days + idle_days
 
-    # --- Freight: hire the vessel for the round trip. Ballast leg approximated
-    #     at 55 pct of laden sea time, which is the standard rough allowance. ---
-    hire_days = sea_days * 1.55 + load_days + disch_days
+    # --- Freight: hire the vessel for the round trip. The empty positioning leg,
+    #     which the trade calls ballast and the problem statement calls deadheading,
+    #     is charged as a fraction of laden sea time. That fraction used to be the
+    #     bare number 1.55 written here in code, which broke this project's own rule
+    #     that no cost figure is hard-coded, and made the single largest assumption in
+    #     the freight line invisible. It now comes from cost_assumptions.json and is
+    #     reported separately below, because idle and empty time is one of the four
+    #     things the problem statement asks to be managed. ---
+    ballast_fraction = a["ballast_allowance_fraction"]
+    ballast_days = sea_days * ballast_fraction
+    hire_days = sea_days + ballast_days + load_days + disch_days
     freight_usd = hire_days * tce_usd_per_day
+    ballast_usd = ballast_days * tce_usd_per_day
 
     # --- Demurrage: waiting beyond allowed laytime. Congestion becomes money here. ---
     demurrage_rate = tce_usd_per_day * a["demurrage_usd_per_day_multiplier"]
@@ -77,6 +86,17 @@ def compute(candidate, cap, tce_usd_per_day, overrides=None, cargo_type=None,
     per_tonne_usd = total_usd / tonnes
     fx = a["usd_to_inr"]
 
+    # --- Idle and empty time, gathered in one place. -----------------------------
+    # Waiting for a berth and waiting out weather are both time on hire during which
+    # no cargo moves, and the ballast leg is time on hire during which no cargo is
+    # even aboard. Nothing here is a new charge. Every dollar of it is already inside
+    # the totals above. It is pulled out so that a buyer can see what share of the
+    # bill is being paid for a ship doing nothing, which is the number the problem
+    # statement's idle scenario requirement is really asking about.
+    # (idle_days was computed with the time components above.)
+    idle_usd = expected_demurrage_usd + weather_demurrage_usd
+    unproductive_usd = idle_usd + ballast_usd
+
     return {
         "landed_cost_usd_per_tonne": round(per_tonne_usd, 2),
         "landed_cost_inr_per_tonne": round(per_tonne_usd * fx, 0),
@@ -97,6 +117,19 @@ def compute(candidate, cap, tce_usd_per_day, overrides=None, cargo_type=None,
             "waiting": round(wait_days, 1),
             "weather_delay": round(weather_days, 1),
             "discharge": round(disch_days, 1),
+        },
+        "idle_and_empty_time": {
+            "idle_days": round(idle_days, 1),
+            "waiting_days": round(wait_days, 1),
+            "weather_days": round(weather_days, 1),
+            "ballast_days": round(ballast_days, 1),
+            "ballast_allowance_fraction": ballast_fraction,
+            "idle_cost_usd_per_tonne": round(idle_usd / tonnes, 2),
+            "ballast_cost_usd_per_tonne": round(ballast_usd / tonnes, 2),
+            "unproductive_cost_usd_per_tonne": round(unproductive_usd / tonnes, 2),
+            "unproductive_share_percent": round(100.0 * unproductive_usd / total_usd, 1),
+            "working_days": round(load_days + disch_days, 1),
+            "sea_laden_days": round(sea_days, 1),
         },
         "inland_km": inland_km,
         "cargo_handling_multiplier": handling,

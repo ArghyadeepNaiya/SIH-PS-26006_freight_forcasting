@@ -608,3 +608,127 @@ body.single #demand select { max-width: 320px; }
   .verdict h3, .price .amt, .headline-price .amt { color: #000; }
   a { color: #000; }
 }
+
+/* ====================================================================== plain words
+
+   The trade vocabulary this system runs on is the largest barrier between a
+   reader and what is actually on the screen, so every trade word is marked.
+   The mark is deliberately quiet. A dotted rule under the word, the same colour
+   as the action colour, so it reads as "there is something here" rather than as
+   an error. The panel it opens is the caution surface, one step up the depth
+   ramp from the card it sits on, so it reads as raised above the page.
+
+   The panel is a mouse affordance only, and it is aria-hidden. A screen reader
+   instead hears the short expansion that sits in .sr text immediately after the
+   word, because a hover panel is invisible to it and a title attribute is not
+   announced reliably. The full entry for every word is on the plain word list
+   screen, which is where a reader who cannot hover is sent by the header. */
+
+.termwrap { position: relative; display: inline; }
+.term {
+  border-bottom: 1px dotted var(--shallows);
+  cursor: help;
+}
+.termwrap:hover .term { color: var(--chartwhite); border-bottom-style: solid; }
+
+.term-pop {
+  position: absolute; left: 0; top: calc(100% + 9px); z-index: 50;
+  width: max-content; max-width: min(340px, 74vw);
+  background: var(--shoal); color: var(--chartwhite);
+  border: 1px solid var(--drying); border-left: 4px solid var(--shallows);
+  padding: 12px 15px;
+  font-family: "Barlow Semi Condensed", "Fira Sans Condensed", Arial, sans-serif;
+  font-size: 14.5px; font-weight: 400; line-height: 1.5; font-style: normal;
+  text-align: left; white-space: normal; letter-spacing: 0;
+  box-shadow: 0 12px 30px rgba(0,0,0,.6);
+  opacity: 0; visibility: hidden; transition: opacity .12s linear;
+  pointer-events: none;
+}
+.term-pop b {
+  display: block; color: var(--shallows); font-weight: 600; font-size: 15.5px;
+  margin-bottom: 4px;
+}
+.termwrap:hover .term-pop { opacity: 1; visibility: visible; }
+/* Near the right edge there is no room to open rightwards, so the last few
+   words on a line open leftwards instead of running off the screen. */
+@media (max-width: 700px) { .term-pop { left: auto; right: 0; } }
+
+/* ------------------------------------------------- the plain English preamble
+
+   Every screen opens by saying, in ordinary words, what it is for and what will
+   happen if you use it. It is set as a raised panel with the action colour down
+   its edge, so it is unmistakably an explanation and not a result.            */
+
+.explain {
+  background: var(--shelf); border: var(--rule); border-left: 4px solid var(--shallows);
+  padding: 22px 26px; margin: 0 0 28px;
+}
+.explain h2 { margin: 0 0 10px; }
+.explain p { max-width: var(--measure); font-size: 15.5px; color: var(--sounding); }
+.explain p:last-child { margin-bottom: 0; }
+.explain b, .explain strong { color: var(--chartwhite); }
+
+.steps { margin: 12px 0; padding-left: 24px; max-width: var(--measure); }
+.steps li { margin: 8px 0; font-size: 15.5px; color: var(--sounding); }
+.steps li::marker { color: var(--shallows); font-family: "IBM Plex Mono", monospace; }
+
+/* --------------------------------------------------------- the verdict, in words */
+
+.kicker {
+  font-family: "Barlow Condensed", sans-serif; text-transform: uppercase;
+  letter-spacing: .1em; font-size: 13px; color: var(--sounding); margin: 0 0 4px;
+}
+.verdict .what {
+  margin: 8px 0 0; font-size: 16px; color: var(--sounding); max-width: 54ch;
+}
+.provplain { font-size: 13.5px; color: var(--faint); margin-left: 8px; }
+
+/* ------------------------------------------------------------ plain word list */
+
+.gloss { list-style: none; padding: 0; margin: 0; }
+.gloss > li { border-top: 1px solid #14303F; padding: 18px 0; max-width: var(--measure); }
+.gloss > li:first-child { border-top: 0; }
+.gloss .g-term {
+  font-family: "Barlow Condensed", sans-serif; font-size: 24px; font-weight: 600;
+  color: var(--chartwhite); margin: 0;
+}
+.gloss .g-full { font-size: 15.5px; color: var(--shallows); margin: 2px 0 0; }
+.gloss .g-plain { font-size: 15.5px; color: var(--sounding); margin: 8px 0 0; }
+
+/* ==================================================== plans, origins, warnings
+
+   Three new screens share one list form, because they are the same shape of
+   content: a named choice, a headline number, the facts behind it, and a line of
+   prose underneath. It is an ordered list rather than a table on purpose. A table
+   of five columns is unreadable through a screen reader, and this content has to
+   read aloud in the order a person would say it.                              */
+
+.plans { list-style: none; padding: 0; margin: 0 0 26px; }
+.plan {
+  background: var(--shelf); border: var(--rule); border-left: 3px solid var(--drying);
+  padding: 20px 24px; margin-bottom: 14px;
+}
+.plan.best { border-color: #2C6B54; border-left-color: var(--starboard);
+  background: linear-gradient(160deg, #0D2A24 0%, var(--shelf) 55%); }
+.plan-h { display: flex; justify-content: space-between; gap: 22px;
+  align-items: flex-start; flex-wrap: wrap; }
+.plan-h h3 { font-size: 21px; margin: 0; max-width: 46ch; }
+.plan .price { margin: 0; }
+.plan.best .price .amt { color: var(--starboard); }
+.plan .meta { margin-top: 14px; }
+.plan .dayline { margin-top: 12px; }
+.plan .opt-sub { margin-top: 10px; }
+
+/* Severity is a word first. The tint only repeats what the word already says,
+   which is the rule this whole interface is built on. */
+.sev {
+  display: inline-block; font-family: "Barlow Condensed", sans-serif;
+  text-transform: uppercase; letter-spacing: .08em; font-size: 13px; font-weight: 600;
+  padding: 5px 11px; border: 1px solid var(--drying); white-space: nowrap;
+}
+.sev-high   { color: #FFB2AA; background: #24100E; border-color: #6B2A24; }
+.sev-medium { color: var(--buoy); background: #241C0C; border-color: #55441A; }
+.sev-low    { color: var(--sounding); background: var(--shoal); }
+.plan.warn-high   { border-left-color: var(--port); }
+.plan.warn-medium { border-left-color: var(--buoy); }
+.plan.warn-low    { border-left-color: var(--drying); }

@@ -221,9 +221,9 @@ def berth_offer(port_code: str, vessel_class: str, window_start: date, window_en
             "declaration": decl,
             "explanation": (
                 f"The operator of {PORTS.get(port_code, {}).get('name', port_code)} "
-                f"accepts a {vessel_class}, but every area that does is committed over "
-                f"the arrival window of {window_start.isoformat()} to "
-                f"{window_end.isoformat()}. Nearest area, "
+                f"can take a {vessel_class}, but every yard that can is already committed "
+                f"for the whole period the cargo would arrive in, "
+                f"{window_start.isoformat()} to {window_end.isoformat()}. The nearest one, "
                 f"{first[0].get('name', 'unnamed area')}, {first[1]}."
             ),
         }

@@ -436,3 +436,85 @@ Local development runs three processes plus MongoDB.
 Production demo runs docker compose with four containers. Everything must work with
 no internet connection once data is seeded, because a live API call during a
 presentation is an unnecessary way to fail.
+
+## 11. The programme layer, added for the stated objective
+
+Sections 1 to 10 describe a system that prices ONE shipment. The problem statement's
+objective is a different thing. Move from entering many single spot contracts to
+entering short or medium term contracts covering multiple voyages. Five modules were
+added for that, and the reasoning behind each is written at the top of its own file
+rather than only here.
+
+### 11.1 app/core/market.py
+
+Descriptive statistics of the price history. No model is fitted and nothing is
+predicted, because a term contract decision does not need a forecast. It needs the
+DISTRIBUTION of what the spot market has done over periods of the relevant length.
+Three measurements.
+
+1. Coverage ratios. For every day with a full period after it, the mean index level
+   over the following period divided by the level on that day. This is what a term
+   rate competes against.
+2. Volatility regime. Realised volatility over the last twenty one trading days,
+   reported as a percentile of the same index's own history, because a raw
+   annualised figure means nothing to a buyer on its own.
+3. Seasonality, tested by CALENDAR ROTATION rather than asserted. The deviation
+   series is circularly shifted many times, which destroys the alignment with the
+   months while preserving every other property including the autocorrelation. The
+   real alignment has to beat nearly all of those rotations before a month effect is
+   reported as real. Rotations within thirty days of a whole year are excluded,
+   because they re-align the calendar and would otherwise hide the very effect they
+   are the null for. Two earlier and simpler versions of this test both reported
+   confident seasonality in a pure random walk and were replaced.
+
+### 11.2 app/core/programme.py
+
+Prices a whole buying programme three ways against that distribution. Everything on
+spot, everything on term, and the mean variance answer in between. The optimal
+coverage share comes from minimising expected cost plus lambda times the variance
+that is left uncovered, which has the closed form in market.optimal_coverage. Lambda
+lives in cost_assumptions.json as a stated procurement policy, not as a constant in
+the code, and the interface reports the premium at which coverage would fall to zero
+so that the parameter can be argued with.
+
+Only the freight and demurrage parts of a landed cost are treated as exposed to the
+charter market. Port charges, lightering and the inland leg are not, so a term
+contract is never credited with protecting them.
+
+### 11.3 app/core/timing.py
+
+The market entry question across every horizon at once, holding three things apart on
+purpose. Where the model has demonstrated skill. What the calendar does. How unstable
+prices are right now. Merging them into a single confidence number would hide the
+distinction this project exists to make.
+
+### 11.4 app/core/risk.py
+
+Early warnings from five sources. Market volatility, forecast reliability, port
+congestion measured as the operator declared wait against the published typical wait,
+weather, and data quality. Every warning carries its evidence and a stated action.
+Severity is one of three words, never a colour alone.
+
+### 11.5 app/core/compare.py
+
+The same cargo priced from every origin that supplies it, by running the ordinary
+pipeline once per origin. The nearest origin is frequently not the cheapest, because
+a shallow load port caps how full the ship can leave, and that is the effect the
+screen exists to show.
+
+### 11.6 New endpoints
+
+1. POST /ml/programme. Spot against term over a period, with an optional quoted term
+   rate expressed as a fraction of today's spot level.
+2. POST /ml/compare-origins. Landed cost from every supplying origin, ranked.
+3. GET /ml/timing. Horizon scan, volatility regime and the seasonality test.
+4. GET /ml/risk. The warning list.
+
+### 11.7 Idle and empty time
+
+cost_model.compute now returns an idle_and_empty_time block, and the pipeline returns
+an idle_summary naming the option with the least waiting. Nothing new is charged. The
+waiting, weather and ballast components were always inside the totals, and are now
+pulled out because idle time is the part of a voyage planning can remove. The ballast
+allowance moved out of the code and into cost_assumptions.json at the same time,
+where the project's own rules always said it belonged.

@@ -12,44 +12,82 @@
      should not trust a cost without them either. -->
 <header class="titleblock">
   <div class="titleblock-inner">
-    <p class="chartno">Problem statement 26006. Ministry of Steel, SAIL.</p>
+    <p class="chartno">Smart India Hackathon problem statement 26006. Ministry of Steel.
+      Steel Authority of India Limited.</p>
     <h1>Freight Charter Decision Console</h1>
-    <p class="strap">Bulk cargo from overseas to the East Coast of India. Say what you
-      need landed and by when. The system picks the ship, picks the port, and prices
-      the tonne at the plant gate.</p>
+    <p class="strap">This system plans the sea journey that brings bulk raw material, such as
+      coking coal or iron ore, from another country to a steel plant in eastern India. You say
+      what you need and when you need it. The system chooses what size of ship to hire and
+      which Indian port it should unload at. It then tells you what one tonne will have cost by
+      the time it reaches the plant gate, and whether to book a ship today or wait.</p>
+    <p class="strap">Shipping has a lot of trade words in it. Each one is marked with a dotted
+      underline the first time it appears on a screen. Rest the mouse pointer on a marked word
+      and its meaning appears. Every one of them is also written out in ordinary English on the
+      plain word list screen, which is the last of the five listed below, so nothing here
+      depends on being able to use a mouse.</p>
     <ul class="blocknotes">
-      <li>Depths and drafts<span class="v">metres</span></li>
-      <li>Costs<span class="v">US dollars and rupees, per tonne delivered</span></li>
-      <li>Rate data<span class="v" id="src" role="status">loading</span></li>
+      <li>Water depths and ship drafts<span class="v">in metres</span></li>
+      <li>All costs<span class="v">US dollars and rupees, for each tonne delivered</span></li>
+      <li>Ship price history<span class="v" id="src" role="status">loading</span></li>
     </ul>
   </div>
 </header>
 
+<!-- data-page names the section to show. It used to be a position, and the code
+     hid screens by counting them, which meant inserting a screen anywhere in the
+     middle silently pointed every later button at the wrong one. -->
 <nav class="sheets" aria-label="Screens">
-  <button type="button" class="tabbtn" data-page="0" aria-current="page">Decision console</button>
-  <button type="button" class="tabbtn" data-page="1">Market and forecast</button>
-  <button type="button" class="tabbtn" data-page="2">Port intelligence</button>
-  <button type="button" class="tabbtn" data-page="3">Capacity and weather</button>
+  <button type="button" class="tabbtn" data-page="p0" aria-current="page">1. Plan one shipment</button>
+  <button type="button" class="tabbtn" data-page="p5">2. Plan a buying programme</button>
+  <button type="button" class="tabbtn" data-page="p6">3. Compare supply countries</button>
+  <button type="button" class="tabbtn" data-page="p1">4. Prices, forecast and timing</button>
+  <button type="button" class="tabbtn" data-page="p7">5. Risks and warnings</button>
+  <button type="button" class="tabbtn" data-page="p2">6. What each port can take</button>
+  <button type="button" class="tabbtn" data-page="p3">7. Live port space and weather</button>
+  <button type="button" class="tabbtn" data-page="p4">8. Plain word list</button>
   <a class="away" href="/port">Port operator sign in</a>
 </nav>
 
 <main id="main" tabindex="-1">
 
 <!-- ============ SCREEN 0. DECISION CONSOLE ============ -->
-<section class="page" id="p0" aria-label="Decision Console"><div class="grid">
-  <div class="card">
-    <h2 class="card-title">Cargo requirement</h2>
-    <div class="sub" style="margin-bottom:2px">Five inputs. Everything else is defaulted and editable.</div>
-    <form id="cargoform">
-      <label for="origin">Origin</label>
-      <select id="origin"></select>
-      <p class="hint" id="originhint">Cargo choices update to match what this origin supplies.</p>
+<section class="page" id="p0" aria-label="Get a recommendation">
 
-      <label for="cargo">Cargo type</label>
+<div class="explain">
+  <h2>What this screen does, in plain words</h2>
+  <p>You need to buy raw material from overseas and land it at an Indian steel plant. Before
+    anyone can buy it, somebody has to hire a ship to carry it. This screen answers the three
+    questions that go with that decision.</p>
+  <ol class="steps">
+    <li>What size of ship should be hired for this load.</li>
+    <li>Which port on the east coast of India it should unload at.</li>
+    <li>What one tonne will cost by the time it reaches the plant gate, and whether it is
+      better to book the ship today or to wait.</li>
+  </ol>
+  <p>Fill in the five boxes on the left and then choose the button marked get recommendation.
+    The system compares every size of ship against every port, removes the combinations that
+    physically cannot work, and puts what is left in order of cost. It also lists the ones it
+    removed and says which rule removed each of them.</p>
+  <p>Nothing is ordered and no message is sent to anybody. This screen only produces advice
+    that you read here.</p>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h2 class="card-title">What do you need delivered</h2>
+    <div class="sub" style="margin-bottom:2px">Five questions. Everything else is filled in
+      for you and can be changed later.</div>
+    <form id="cargoform">
+      <label for="origin">Which country is the cargo coming from</label>
+      <select id="origin"></select>
+      <p class="hint" id="originhint">The list of materials below changes to show only what
+        this country actually ships.</p>
+
+      <label for="cargo">What material are you buying</label>
       <select id="cargo" aria-describedby="cargohint"></select>
       <p class="hint" id="cargohint"></p>
 
-      <label for="qty">Quantity (tonnes)</label>
+      <label for="qty">How much do you need, in tonnes</label>
       <!-- STEP AND MIN MUST AGREE WITH THE DEFAULT VALUE. A number input is valid
            only at min plus a whole multiple of step. This field used to read
            min 1000 with step 5000, which makes the nearest valid values 71000 and
@@ -59,73 +97,300 @@
            quantity. Changing either number here means rechecking the default. -->
       <input id="qty" type="number" value="75000" step="1000" min="1000" required
         aria-describedby="qtyhint">
-      <p class="hint" id="qtyhint">Total parcel size required at the plant.</p>
+      <p class="hint" id="qtyhint">The whole load you want at the plant. One tonne is one
+        thousand kilograms. A typical single shipload here is seventy five thousand tonnes.</p>
 
-      <label for="plant">Destination plant</label>
-      <select id="plant"><option value="">Let the system choose the port</option></select>
+      <label for="plant">Which steel plant is it going to</label>
+      <select id="plant"><option value="">I do not mind, choose the cheapest port for me</option></select>
 
-      <label for="hz">Decision horizon (days)</label>
+      <label for="hz">How far ahead are you deciding, in days</label>
       <select id="hz"><option>7</option><option>14</option><option selected>30</option>
         <option>60</option><option>90</option></select>
+      <p class="hint" id="hzhint">This is the length of time you are willing to hold off. The
+        system compares booking a ship today against waiting up to this many days for a better
+        price. Thirty days is the usual answer.</p>
 
       <button class="go" id="runbtn" type="submit">Get recommendation</button>
+      <p class="hint">Choosing this compares every ship against every port and ranks them by
+        the cost of one delivered tonne. It takes a few seconds. The answer appears on the
+        right of this screen, or below this box on a narrow display.</p>
     </form>
   </div>
 
   <div id="out" aria-live="polite" aria-busy="false">
-    <div class="empty">Enter a cargo requirement and select <b>Get recommendation</b>.
-      The system will rank every vessel class and discharge port by landed cost per tonne.</div>
+    <div class="empty">Nothing has been worked out yet. Fill in the boxes on the left and
+      choose <b>Get recommendation</b>. You will then get one clear recommendation at the top,
+      then every workable ship and port pairing in order of cost, and then the pairings that
+      were ruled out with the reason each one was ruled out.</div>
   </div>
 </div></section>
 
 <!-- ============ SCREEN 1. MARKET AND FORECAST ============ -->
-<section class="page" id="p1" hidden aria-label="Market and Forecast">
+<section class="page" id="p1" hidden aria-label="Prices and forecast">
+
+<div class="explain">
+  <h2>What this screen does, in plain words</h2>
+  <p>The price of hiring a ship moves every day, in much the same way the price of an air
+    ticket does. This screen shows what that price has done over the last two years for each
+    size of ship, and what our computer model expects it to do next.</p>
+  <p>It also does something that most tools quietly avoid. It tells you whether our own
+    forecast is worth listening to at all. It does that by testing our model against the
+    laziest forecast anyone could make, which is to say that tomorrow's price will be whatever
+    today's price is. A forecast that cannot beat that lazy guess is not adding anything, and
+    when ours cannot beat it we say so on this screen instead of hiding it.</p>
+</div>
+
   <div id="skillwarn"></div>
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px">
-      <div><h2 class="card-title">Rate history</h2><div class="sub">Last 24 months</div></div>
-      <div style="min-width:200px">
-        <label for="ik" style="margin-top:0">Vessel class index</label>
+      <div><h2 class="card-title">What ship hire has cost</h2>
+        <div class="sub">The published daily price for the last two years</div></div>
+      <div style="min-width:230px">
+        <label for="ik" style="margin-top:0">Which size of ship</label>
         <select id="ik">
-          <option value="BCI">Capesize (BCI)</option><option value="BPI">Panamax (BPI)</option>
-          <option value="BSI">Supramax (BSI)</option><option value="BHSI">Handysize (BHSI)</option>
+          <option value="BCI">Capesize, the biggest (BCI)</option>
+          <option value="BPI">Panamax, large (BPI)</option>
+          <option value="BSI">Supramax, medium (BSI)</option>
+          <option value="BHSI">Handysize, small (BHSI)</option>
         </select>
       </div>
     </div>
     <figure id="chart" style="margin-top:14px" aria-live="polite"></figure>
   </div>
 
-  <h2>Forecast honesty panel</h2>
+  <h2>Can this forecast be trusted</h2>
   <div class="card">
-    <p style="margin:0 0 14px;color:var(--dim);font-size:13.5px">Skill score is
-    <b style="color:var(--ink)">1 &minus; (model error / naive error)</b>, where naive means
-    assuming tomorrow's rate equals today's. Positive means the model beats doing nothing.
-    Zero or below means it does not, and we say so rather than hide it.</p>
+    <p style="margin:0 0 10px;color:var(--sounding);font-size:15.5px">We measure that with one
+      number, which forecasters call a <b style="color:var(--chartwhite)">skill score</b>. It compares
+      the size of our model's mistakes against the size of the mistakes made by simply assuming
+      that the price does not change at all.</p>
+    <ol class="steps" style="margin:0 0 12px;color:var(--sounding);font-size:15.5px">
+      <li>Above zero means our model made smaller mistakes than the lazy guess, so it is worth
+        listening to.</li>
+      <li>Zero or below means it did not, so you should ignore the forecast and treat today's
+        price as the best information you have.</li>
+    </ol>
+    <p style="margin:0 0 14px;color:var(--sounding);font-size:15.5px">The list below reports
+      that test for each size of ship and for each length of time ahead. Where the answer is
+      unfavourable to us, it still says so.</p>
     <ul class="skill-list" id="skillbody"></ul>
+  </div>
+
+  <h2>When to go into the market</h2>
+  <p class="lead">Three separate questions, kept separate on purpose. Whether our model
+  can see anything. What the calendar does, if anything. And how unstable prices are right
+  now. A seasonal pattern is not evidence that our model works, and a working model is not
+  evidence of a seasonal pattern, so merging them into one score would hide the very
+  distinction that makes this system trustworthy.</p>
+  <div id="timing" aria-live="polite">
+    <div class="empty">Loading the timing scan.</div>
   </div>
 </section>
 
 <!-- ============ SCREEN 2. PORT INTELLIGENCE ============ -->
-<section class="page" id="p2" hidden aria-label="Port Intelligence">
-  <div class="warnbox"><b>Every value below carries a source citation.</b>
-  Values marked ASSUMPTION are unverified placeholders and must be confirmed with the
-  port authority before this system is used for a real decision.</div>
+<section class="page" id="p2" hidden aria-label="What each port can take">
+
+<div class="explain">
+  <h2>What this screen does, in plain words</h2>
+  <p>A port cannot accept every ship that turns up. The water in front of it has a certain
+    depth, the berth has a certain length, and a loaded ship that sits deeper in the water than
+    the port is deep cannot get in. This screen lists those physical limits for every east
+    coast port the system considers.</p>
+  <p>This is why the biggest ship is often the wrong answer. A big ship is cheaper for each
+    tonne only if you can fill it. At a shallow port it cannot be filled, and a half empty
+    voyage costs very nearly the same as a full one, so the cost of each tonne actually
+    delivered goes up rather than down.</p>
+  <p>When the recommendation screen refuses a ship, the limit that refused it is on this
+    screen.</p>
+</div>
+
+  <div class="warnbox"><b>Every number below says where it came from.</b>
+  A number marked assumption is a placeholder we chose ourselves. It has not been confirmed
+  with the port or against a published document, so it must be checked with the port authority
+  before anyone uses this system for a real purchase.</div>
   <div class="pgrid" id="ports"></div>
 </section>
 
 <!-- ============ SCREEN 3. PORT CAPACITY AND WEATHER ============ -->
-<section class="page" id="p3" hidden aria-label="Port Capacity and Weather">
-  <div class="warnbox"><b>Two live inputs feed the ranking on the Decision Console.</b>
-  The first is what each port operator declares through their own password protected
-  dashboard, about free area, availability, accepted vessel classes and cargo demand.
-  The second is the weather forecast at each quay and each approach anchorage.
-  Everything an operator declares is dated and attributed. It is not a published port
-  authority figure, and this page never pretends otherwise.</div>
+<section class="page" id="p3" hidden aria-label="Live port space and weather">
+
+<div class="explain">
+  <h2>What this screen does, in plain words</h2>
+  <p>The screen before this one lists what a port can take in principle. This screen shows what
+    is actually going on at each port at the moment, and it comes from two places.</p>
+  <ol class="steps">
+    <li>The port's own staff sign in to a separate password protected page and state how much
+      yard space they have free, which sizes of ship they can take, how long ships are waiting
+      now, and which materials they are short of. Everything they state is stamped with their
+      name and the date they stated it.</li>
+    <li>The weather forecast for the next several days at each dock and at each waiting area
+      out at sea. Bad weather stops unloading, and every day lost that way is charged to you,
+      so it is priced into the recommendations on the first screen.</li>
+  </ol>
+  <p>What a port operator states here is their own claim about their own port. It is not a
+    published figure from the port authority, and this screen never pretends otherwise.</p>
+</div>
+
   <div class="btnrow" style="margin:0 0 22px">
-    <button type="button" class="btn quiet" id="wxrefresh">Refresh every forecast now</button>
+    <button type="button" class="btn quiet" id="wxrefresh">Get the latest weather for every
+      port now</button>
   </div>
   <div id="portlive" aria-live="polite">
-    <div class="empty">Loading declared capacity and weather.</div>
+    <div class="empty">Loading what the ports have stated and what the weather is expected to
+      do.</div>
+  </div>
+</section>
+
+<!-- ============ SCREEN 4. PLAIN WORD LIST ============ -->
+<section class="page" id="p4" hidden aria-label="Plain word list">
+
+<div class="explain">
+  <h2>What this screen does, in plain words</h2>
+  <p>Shipping and forecasting both come with a private vocabulary, and a lot of it appears on
+    the other four screens because it is the language the trade actually uses. Every one of
+    those words is written out here in ordinary English, in alphabetical order.</p>
+  <p>Anywhere else on this system, the same words carry a dotted underline the first time they
+    appear on a screen. Resting the mouse pointer on one of them shows a short version of the
+    explanation you will find here.</p>
+</div>
+
+  <h2>Every word this system uses</h2>
+  <ol class="gloss" id="glosslist"></ol>
+</section>
+
+<!-- ============ SCREEN 5. CONTRACT PROGRAMME ============ -->
+<section class="page" id="p5" hidden aria-label="Plan a contract programme">
+
+<div class="explain">
+  <h2>What this screen does, in plain words</h2>
+  <p>This is the screen the whole project exists for. The first screen prices one
+    shipload. This one plans a whole year, or half of one, and answers the question the
+    first screen cannot. Should you keep hiring a ship every time you need one, at whatever
+    the price happens to be that day, or should you sign one contract now that covers all
+    the voyages at a rate agreed in advance.</p>
+  <ol class="steps">
+    <li>Buying each voyage as you need it is called buying on the spot market. You pay
+      whatever the price is on the day. Sometimes that is cheap and sometimes it is not,
+      and you find out which only after you have committed.</li>
+    <li>Signing one contract for many voyages is called a term contract. You know the
+      price for the whole period on the day you sign. The owner will usually want a little
+      extra for taking that risk off you.</li>
+    <li>You do not have to choose one or the other. Covering part of the programme on a
+      term contract and buying the rest on the spot market is normally the right answer,
+      and this screen works out what that share should be.</li>
+  </ol>
+  <p>The comparison uses no forecast at all, which matters, because on the data loaded
+    today our forecast is not reliable. Instead it measures what the spot market has
+    actually done over every period of this length in its whole history, and asks whether
+    the rate on offer beats that record.</p>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h2 class="card-title">Your buying programme</h2>
+    <div class="sub" style="margin-bottom:2px">What you need over the coming months, not
+      what you need in one ship.</div>
+    <form id="pgform">
+      <label for="pg_origin">Which country is it coming from</label>
+      <select id="pg_origin"></select>
+
+      <label for="pg_cargo">What material are you buying</label>
+      <select id="pg_cargo"></select>
+
+      <label for="pg_plant">Which steel plant is it going to</label>
+      <select id="pg_plant"><option value="">I do not mind, choose the cheapest port</option></select>
+
+      <label for="pg_qty">How much in total, in tonnes</label>
+      <input id="pg_qty" type="number" value="600000" step="10000" min="10000" required
+        aria-describedby="pg_qty_h">
+      <p class="hint" id="pg_qty_h">The whole quantity for the period, across every
+        shipload. Six hundred thousand tonnes is roughly nine Panamax loads.</p>
+
+      <label for="pg_days">Over what period</label>
+      <select id="pg_days">
+        <option value="90">Three months</option>
+        <option value="180" selected>Six months</option>
+        <option value="270">Nine months</option>
+        <option value="365">One year</option>
+      </select>
+
+      <label for="pg_term">Term rate you have been offered, as a percentage of today's
+        spot rate</label>
+      <input id="pg_term" type="number" value="" step="1" min="20" max="300"
+        placeholder="leave empty if you have no offer yet" aria-describedby="pg_term_h">
+      <p class="hint" id="pg_term_h">If an owner has quoted you a rate, put it here as a
+        percentage of today's spot rate. 105 means five percent above today. 95 means five
+        percent below. Leave it empty and the comparison assumes an offer at exactly
+        today's rate, and tells you the highest rate that would still be worth signing.</p>
+
+      <button class="go" id="pgbtn" type="submit">Compare spot against a term contract</button>
+      <p class="hint">This does not send anything to anybody. It prices your programme
+        three ways and shows the three side by side.</p>
+    </form>
+  </div>
+
+  <div id="pgout" aria-live="polite" aria-busy="false">
+    <div class="empty">Nothing has been worked out yet. Fill in the boxes on the left and
+      choose <b>Compare spot against a term contract</b>.</div>
+  </div>
+</div></section>
+
+<!-- ============ SCREEN 6. COMPARE SUPPLY COUNTRIES ============ -->
+<section class="page" id="p6" hidden aria-label="Compare supply countries">
+
+<div class="explain">
+  <h2>What this screen does, in plain words</h2>
+  <p>The same material can be bought from several countries, and the first screen assumes
+    you have already chosen one. This screen questions that choice. It prices the same
+    quantity of the same material landed at the same plant, from every country in this
+    system that can supply it, and puts them in order of what a tonne actually costs at
+    the plant gate.</p>
+  <p>The answer is often not the nearest country. A short voyage from a shallow loading
+    port can be dearer than a long voyage from a deep one, because the shallow port cannot
+    fill the ship, and a half empty ship costs almost as much to sail as a full one. That
+    is the effect this screen exists to make visible.</p>
+</div>
+
+  <div class="btnrow" style="margin:0 0 22px">
+    <button type="button" class="btn" id="cmpbtn">Price this material from every country</button>
+  </div>
+  <p class="lead">This uses the material, quantity and destination plant you chose on the
+    first screen. Change them there and run this again.</p>
+  <div id="cmpout" aria-live="polite">
+    <div class="empty">Nothing has been compared yet. Choose the button above.</div>
+  </div>
+</section>
+
+<!-- ============ SCREEN 7. RISKS AND WARNINGS ============ -->
+<section class="page" id="p7" hidden aria-label="Risks and early warnings">
+
+<div class="explain">
+  <h2>What this screen does, in plain words</h2>
+  <p>Everything else on this system tells you what a tonne costs. This screen tells you
+    what could go wrong with that number. Five things are watched all the time, and
+    anything that looks unusual is written up here with the evidence that raised it and
+    what you can do about it.</p>
+  <ol class="steps">
+    <li>The freight market, watched for prices swinging more violently than usual, which
+      is when a fixed rate is worth the most.</li>
+    <li>Our own forecast, which is flagged whenever it fails its reliability test, so that
+      nobody reads it as advice when it is not.</li>
+    <li>The ports, by comparing the queue a port operator reports today against the
+      waiting time normally published for that port.</li>
+    <li>The weather at each port over the coming week.</li>
+    <li>The data itself, because a confident looking number built on unverified
+      placeholders is a risk even when the arithmetic is perfect.</li>
+  </ol>
+  <p>Warnings are sorted with the most serious first. Every one of them names where the
+    evidence came from, so none of them has to be taken on trust.</p>
+</div>
+
+  <div class="btnrow" style="margin:0 0 22px">
+    <button type="button" class="btn quiet" id="riskbtn">Check everything again now</button>
+  </div>
+  <div id="riskout" aria-live="polite">
+    <div class="empty">Checking the market, the forecast, the ports, the weather and the
+      data.</div>
   </div>
 </section>
 
@@ -149,6 +414,304 @@
 const $ = id => document.getElementById(id);
 const API = location.origin;
 let REF = null, HIST = {}, SKILL = null, DECL = null, WX = null;
+let RISK_LOADED = false;
+
+/* ======================================================================
+   PLAIN WORDS.
+
+   This system is read by people who buy raw material for steel plants, not by
+   mariners and not by forecasters, and the trade vocabulary is the single
+   largest barrier between a reader and what is actually on the screen. So every
+   piece of that vocabulary is defined once, here, and then marked automatically
+   wherever it appears. That includes sentences written by the Python service
+   rather than by this page, because the reader cannot tell which is which and
+   should not have to.
+
+   Each marked word carries three things.
+
+   1. A dotted underline, so a reader can see there is something to find.
+   2. A small panel that appears on hover, giving the full form and one sentence
+      of explanation. That serves a mouse user.
+   3. A short expansion in screen reader only text immediately after the word,
+      because a hover panel is invisible to a screen reader and a title attribute
+      is not announced reliably by any of them. The hover panel is aria-hidden,
+      so the expansion is heard once rather than twice.
+
+   Every entry is also printed in full on the plain word list screen, because a
+   hover panel is not a safe place to keep information a reader may actually
+   need, and because someone reading with a keyboard or a screen reader needs one
+   ordinary page they can go and read.
+
+   Fields. t is the heading shown on the word list and in the hover panel. g is
+   the short spoken expansion, written so that it reads correctly straight after
+   the word itself. plain is the full explanation. m lists every spelling that
+   should be marked. */
+
+const GLOSSARY = [
+  { t: "Anchorage", g: "a waiting place at sea, off the port",
+    plain: "A stretch of sea just outside a port where a ship drops anchor and waits for a berth, or where it unloads part of its cargo into smaller boats.",
+    m: ["anchorage", "anchorages"] },
+  { t: "Ballast", g: "sailing empty to reach the loading port",
+    plain: "A ship sailing with no cargo, usually on its way to pick some up. The owner still has to be paid for that time, so part of the empty run is charged into the price of your voyage.",
+    m: ["ballast"] },
+  { t: "Beam", g: "the width of the ship",
+    plain: "The width of a ship at its widest point, measured in metres. A ship wider than a port's lock or berth cannot be accepted there however deep the water is.",
+    m: ["beam"] },
+  { t: "Berth", g: "the parking space at the port where a ship is unloaded",
+    plain: "The place at a port where a ship ties up so that its cargo can be taken off. There are only so many, which is why ships often have to wait for one.",
+    m: ["berth", "berths"] },
+  { t: "Bulk carrier", g: "a ship that carries loose cargo poured into its holds",
+    plain: "A ship built to carry loose material such as coal or ore, poured straight into the holds rather than packed into containers.",
+    m: ["bulk carrier", "bulk carriers"] },
+  { t: "Capesize", g: "the largest class of bulk ship, around 180,000 tonnes",
+    plain: "The largest class of bulk ship in normal use, carrying roughly 180,000 tonnes. It is called Capesize because it is too big for the Suez and Panama canals and historically had to sail around the capes. Most Indian east coast ports are too shallow to take one fully loaded.",
+    m: ["Capesize", "Capesizes"] },
+  /* Cargo and tonne are on the list for completeness but are deliberately not
+     marked in the page. Both are understood without help, and marking a word that
+     common buries the words that genuinely need it. */
+  { t: "Cargo", g: "the material being carried", m: [],
+    plain: "The material being shipped. In this system that means coking coal, thermal coal, iron ore, manganese ore, limestone or steel scrap." },
+  { t: "Charter", g: "hiring a whole ship",
+    plain: "An agreement to hire a whole ship, either for one voyage or for a period of time. The company that hires it is called the charterer, which in this case is the steel producer.",
+    m: ["charter", "chartering", "charterer", "charterers"] },
+  { t: "Cubes out", g: "the holds fill up before the weight limit is reached",
+    plain: "The holds are full of cargo before the ship has reached the weight it is allowed to carry. Space runs out before weight does, so the ship sails lighter than it could. This happens with bulky, light material and cannot be fixed by unloading some of it at sea.",
+    m: ["cubes out", "cube out", "cubing out"] },
+  { t: "Deadweight, or DWT", g: "deadweight tonnage, the total weight a ship can carry",
+    plain: "The total weight a ship can carry when fully loaded, counting cargo, fuel, fresh water and stores, measured in tonnes. It is the usual way of saying how big a bulk ship is.",
+    m: ["DWT", "deadweight tonnage", "deadweight"] },
+  { t: "Demand rank", g: "how badly the port itself says it wants this material",
+    plain: "A port operator's own list of the materials they most want to see arriving. It is shown beside the recommendation and never inside it, because a port wanting a cargo does not make that cargo any cheaper to deliver there.",
+    m: ["demand rank", "demand ranking"] },
+  { t: "Demurrage", g: "a charge for keeping the ship waiting",
+    plain: "Money paid to the shipowner for every day the ship is held up beyond the time agreed, for example waiting for a berth or waiting out bad weather. It is charged by the day and it is one of the largest avoidable costs in this whole calculation.",
+    m: ["demurrage"] },
+  { t: "Discharge", g: "unloading the cargo",
+    plain: "Taking the cargo off the ship. The discharge port is the Indian port where the material comes ashore, and the discharge rate is how many tonnes a day the port can take off.",
+    m: ["discharge port", "discharge rate", "discharge", "discharged", "discharging"] },
+  { t: "Draft", g: "how deep the loaded ship sits in the water",
+    plain: "How far below the waterline the bottom of a loaded ship sits, measured in metres. If the water at a port is shallower than a ship's draft, that ship cannot come in with a full load. This one measurement is the reason the whole system exists, because it decides how much cargo can actually be carried into each port.",
+    m: ["draft", "drafts", "draught"] },
+  { t: "Fix, or fixing", g: "signing the charter and committing to the price",
+    plain: "To fix a ship is to sign the hire agreement and commit to that day's price. Fix now therefore means book the ship today rather than gambling on a cheaper price later.",
+    m: ["fix now", "fixing", "fixed", "fix"] },
+  { t: "Grain capacity", g: "the total space inside the holds",
+    plain: "The total volume of a ship's holds, measured in cubic metres, when filled with loose material poured in. It sets how much bulky cargo will physically fit, regardless of weight.",
+    m: ["grain capacity"] },
+  { t: "Handysize", g: "the smallest class here, around 32,000 tonnes",
+    plain: "The smallest bulk ship class in this system, carrying roughly 32,000 tonnes. It costs more for each tonne carried, but it can enter shallow ports fully loaded, which sometimes makes it the cheaper answer overall.",
+    m: ["Handysize", "Handysizes"] },
+  { t: "Horizon", g: "how many days ahead you are deciding for",
+    plain: "The number of days ahead that the decision covers. A thirty day horizon means you are asking whether to book now or to wait up to thirty days for a better price.",
+    m: ["decision horizon", "horizons", "horizon"] },
+  { t: "Laden", g: "loaded with cargo",
+    plain: "Carrying cargo. A laden draft is how deep the ship sits once it is loaded, which is the figure that has to fit inside the port's depth.",
+    m: ["laden"] },
+  { t: "Landed cost", g: "the total cost of one tonne at the plant gate",
+    plain: "Everything it costs to get one tonne of material from the loading port to the steel plant gate, added together. It includes ship hire, waiting charges, port charges, unloading into smaller boats where that is needed, and the road or rail journey inland. This is the number the whole system is built to work out, because it is the only one a buyer can actually act on.",
+    m: ["landed cost", "landed per tonne"] },
+  { t: "Lightering", g: "unloading part of the cargo into smaller boats at sea",
+    plain: "Taking some of the cargo off a ship while it is still out at sea, into smaller boats, so that the ship floats higher and can then enter a shallow port. It works, but it is slow and it costs extra for every tonne handled that way.",
+    m: ["lightering", "lightered", "lighterage"] },
+  { t: "Mean absolute error", g: "the average size of a forecast's mistakes",
+    plain: "The average size of the mistakes a forecast makes, counting each mistake as a positive number whether it was too high or too low. A smaller figure means a more accurate forecast.",
+    m: ["mean absolute error", "model error", "naive error"] },
+  { t: "Nautical mile", g: "the distance unit used at sea, about 1.85 kilometres",
+    plain: "The unit of distance used at sea. One nautical mile is 1.852 kilometres, so a voyage of 5,000 nautical miles is about 9,260 kilometres.",
+    m: ["nautical miles", "nautical mile"] },
+  { t: "Naive forecast, or the lazy guess", g: "assuming tomorrow's price equals today's",
+    plain: "The simplest forecast anybody can make, which is to say that tomorrow's price will be the same as today's. It is surprisingly hard to beat with prices like these, so every model in this system has to be measured against it before it is allowed to influence a decision.",
+    m: ["naive persistence", "naive guess", "naive", "lazy guess", "persistence"] },
+  { t: "No skill", g: "our forecast is no better than the lazy guess",
+    plain: "A forecaster's phrase, and an unfortunate one. It is not a statement about the shipping market and it does not mean anybody lacks skill. It means only that our model failed the test against the lazy guess of assuming no change, so its forecast adds nothing and should be ignored. When that happens this system refuses to advise waiting for a better price.",
+    m: ["no skill", "NO SKILL", "no forecast skill", "no forecasting skill"] },
+  { t: "Panamax", g: "a large ship of around 75,000 tonnes",
+    plain: "A bulk ship of roughly 75,000 tonnes, sized to be the largest that could pass through the original Panama Canal locks. It is the workhorse size for this trade, and at shallow Indian ports it often has to sail only part loaded.",
+    m: ["Panamax", "Panamaxes"] },
+  { t: "Parcel", g: "one load bought and shipped together",
+    plain: "One quantity of material bought and moved as a single shipment. Splitting a parcel means buying the same total amount but bringing it in as two smaller shiploads.",
+    m: ["parcel", "parcels"] },
+  { t: "Port charges", g: "what the port bills for handling the ship",
+    plain: "What a port bills for taking a ship in and unloading it, covering berth dues, pilotage, towage and cargo handling. In this system it is expressed as dollars for each tonne unloaded.",
+    m: ["port charges", "port dues"] },
+  { t: "Quay", g: "the built edge of the dock, pronounced key",
+    plain: "The built stone or concrete edge of a dock where a ship ties up and is unloaded. It is pronounced key.",
+    m: ["quay", "quays", "quayside"] },
+  { t: "Skill score", g: "how much better our forecast is than the lazy guess",
+    plain: "One number that answers whether a forecast is worth having. It is one minus our model's average error divided by the lazy guess's average error. Above zero means our model made smaller mistakes than simply assuming no change, so it is worth using. Zero or below means it did not, and the honest response is to ignore the forecast.",
+    m: ["skill score", "skill scores"] },
+  { t: "Split the cargo", g: "bring it in as two smaller shiploads",
+    plain: "Buying the same total tonnage but bringing it in as two smaller shiploads instead of one large one. It is sometimes cheaper, because two smaller ships can each be filled at a shallow port while one large ship cannot.",
+    m: ["split the cargo", "split"] },
+  { t: "Spot market", g: "buying one voyage at whatever today's price happens to be",
+    plain: "Hiring a ship for a single voyage, at the price the market is charging on the day you need it. It is flexible and it commits you to nothing, but you find out what you are paying only when you have to pay it.",
+    m: ["spot market", "spot rate", "spot"] },
+  { t: "Term contract", g: "one agreement covering many voyages at a price fixed now",
+    plain: "An agreement with a shipowner that covers a run of voyages over a period of months, at a rate agreed on the day you sign. You know your costs in advance. The owner is carrying the risk that the market moves, and will usually want something for that.",
+    m: ["term contract", "term contracts", "term rate", "term"] },
+  { t: "Coverage", g: "the share of a programme committed in advance",
+    plain: "How much of a buying programme is committed to a term contract rather than left to be bought voyage by voyage. Covering none of it means carrying the whole swing yourself. Covering all of it means paying the owner to take the whole swing away. The answer is usually somewhere in between.",
+    m: ["coverage", "covered", "cover"] },
+  { t: "Premium", g: "the extra an owner charges for taking the risk off you",
+    plain: "The amount by which a term rate sits above where the spot market is expected to settle. It is the price of certainty. A small premium is usually worth paying, and a large one usually is not, and this system works out where the line falls for you.",
+    m: ["premium"] },
+  { t: "Break even rate", g: "the rate at which two choices cost exactly the same",
+    plain: "The term rate at which committing costs the same on average as buying voyage by voyage. Anything below it is cheaper as well as steadier, so it is the number to carry into a negotiation with an owner.",
+    m: ["break even rate", "break even"] },
+  { t: "Volatility", g: "how violently a price moves about",
+    plain: "A measure of how much a price jumps around from day to day, regardless of the direction it is going. When volatility is high, the eventual cost of buying voyage by voyage is much less predictable, so a rate agreed in advance is worth more.",
+    m: ["volatility", "volatile"] },
+  { t: "Seasonality", g: "a pattern that repeats at the same time each year",
+    plain: "A tendency for prices to be higher or lower at particular times of the year, for reasons such as monsoon, harvest cycles or heating demand. Real seasonality has to be told apart from ordinary random wandering, which is why this system tests for it rather than simply drawing a chart of monthly averages.",
+    m: ["seasonality", "seasonal"] },
+  { t: "Idle time", g: "time the ship is on hire but not moving cargo",
+    plain: "Time you are paying for a ship while nothing is being loaded or unloaded, chiefly waiting for a berth and waiting out bad weather. Unlike the sailing distance, it is the part of a voyage that better planning can actually reduce.",
+    m: ["idle time", "idle"] },
+  { t: "Deadheading", g: "moving a ship with no cargo aboard",
+    plain: "Sailing a ship empty, usually to get it to where the cargo is. It is the same thing the trade calls a ballast leg, and you pay for it whether or not anything is aboard.",
+    m: ["deadheading", "deadhead"] },
+  { t: "Median", g: "the middle value, with half above and half below",
+    plain: "The middle of a set of numbers, arranged in order. It is used on this system in preference to the average, because a few extreme freight markets pull an average upwards and make a typical outcome look worse than it is.",
+    m: ["median"] },
+  { t: "Buying programme", g: "everything you need over a period, planned as one",
+    plain: "The whole quantity of material that has to arrive over the coming months, planned together rather than one shipload at a time. Planning it as one is what makes a term contract possible, which is the change this whole system exists to support.",
+    m: ["buying programme", "programme"] },
+  { t: "Stowage factor", g: "how much space one tonne of this material takes up",
+    plain: "How many cubic metres of hold space one tonne of a material takes up. A high number means light and bulky material, such as thermal coal, which fills the holds before the ship reaches its weight limit. A low number means dense material, such as iron ore, which reaches the weight limit while the holds still look half empty.",
+    m: ["stowage factor", "stowage"] },
+  { t: "Supramax", g: "a medium ship of around 58,000 tonnes",
+    plain: "A bulk ship of roughly 58,000 tonnes, in between Panamax and Handysize. It usually carries its own cranes, so it can work at ports with little shore equipment.",
+    m: ["Supramax", "Supramaxes"] },
+  { t: "Time charter equivalent, or TCE", g: "what the ship owner earns for each day",
+    plain: "What hiring the ship works out at for each day at sea, in US dollars. It is the daily rate this system uses to price a voyage, and it is what the phrase ship hire on this page refers to.",
+    m: ["time charter equivalent", "TCE"] },
+  { t: "Tonne", g: "one thousand kilograms", m: [],
+    plain: "One thousand kilograms, also called a metric ton. Every quantity and every cost on this system is expressed in tonnes." },
+  { t: "Voyage", g: "the whole journey there and back as charged",
+    plain: "The whole journey the ship is hired for, from the moment it starts working for you to the moment it finishes. The days counted here cover loading, the sea passage, waiting for a berth, weather delays and unloading.",
+    m: ["voyage", "voyages"] },
+  { t: "Weighs out", g: "the ship reaches its weight limit before the holds are full",
+    plain: "The ship reaches the maximum weight it is allowed to carry while there is still empty space in the holds. Weight runs out before space does. This is normal with dense material such as iron ore.",
+    m: ["weighs out", "weigh out", "weighing out"] },
+  { t: "Assumption", g: "a placeholder we chose ourselves, not yet confirmed",
+    plain: "A figure this project chose as a stand-in because the real one has not been obtained yet. It carries the word assumption wherever it is used, and it must be confirmed with the port or against a published document before anybody relies on it for a real purchase.",
+    m: ["ASSUMPTION", "assumptions", "assumption"] },
+  { t: "Operator declared", g: "stated by the port's own staff, with a name and a date",
+    plain: "A figure typed in by the staff of that port through their own password protected page, recorded with who stated it and when. It is what the port itself says it can do today. It is not a published port authority limit, and this system always shows the difference.",
+    m: ["OPERATOR DECLARED", "operator declared", "operator declaration", "declared by the port operator"] },
+  /* caps means only mark this when it appears in capitals. Without that guard the
+     ordinary English word published, as in the published price of a ship, would be
+     glossed as though it were the provenance label. */
+  { t: "Published", g: "taken from a public document, with the source named", caps: true,
+    plain: "A figure taken from a public source, such as a port authority document, with that source printed beside it so anybody can go and check it.",
+    m: ["PUBLISHED"] }
+];
+
+let GLOSS_RE = null, GLOSS_MAP = null;
+const escapeRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+function buildGlossary() {
+  GLOSS_MAP = {};
+  const alts = [];
+  GLOSSARY.forEach(e => e.m.forEach(w => {
+    GLOSS_MAP[w.toLowerCase()] = e;
+    alts.push(w);
+  }));
+  /* Longest first, so "landed cost" is matched as one phrase rather than being
+     eaten a word at a time by a shorter entry. */
+  alts.sort((a, b) => b.length - a.length);
+  GLOSS_RE = new RegExp("\\b(" + alts.map(escapeRe).join("|") + ")\\b", "gi");
+}
+
+function markTerm(text, e) {
+  return `<span class="termwrap"><span class="term">${escapeHTML(text)}</span>` +
+    `<span class="sr"> (${escapeHTML(e.g)})</span>` +
+    `<span class="term-pop" aria-hidden="true"><b>${escapeHTML(e.t)}</b>` +
+    `${escapeHTML(e.plain)}</span></span>`;
+}
+
+/* Mark each word once per screen, and never again on that screen. The first
+   version marked every run of text separately, which was tested by listening to
+   the cost breakdown read aloud: nine consecutive rows each ended with the words
+   "a tonne, one thousand kilograms". Marking everything is the same as marking
+   nothing, and it is far worse for anyone reading by ear. The word list screen is
+   what a reader who arrives half way down the page is sent to instead. */
+function glossify(escaped, used) {
+  used = used || new Set();
+  return escaped.replace(GLOSS_RE, m => {
+    const e = GLOSS_MAP[m.toLowerCase()];
+    if (!e || used.has(e.t)) return m;
+    if (e.caps && m !== m.toUpperCase()) return m;
+    used.add(e.t);
+    return markTerm(m, e);
+  });
+}
+
+/* Marking is done on the rendered page rather than on the strings that build it.
+   That way one pass covers both the words this page writes and the words the
+   Python service writes, and neither has to know about the other. Only text
+   nodes are touched, so no attribute, no handler and no SVG drawing is
+   disturbed. */
+function glossifyElement(root) {
+  if (!root || !GLOSS_RE) return;
+  /* h1 is excluded because a dotted rule under one word of a 46px headline reads
+     as a mistake rather than as an offer, and the same word is marked again in the
+     paragraph directly beneath it. */
+  const skip = ".termwrap, script, style, select, textarea, svg, h1, .gloss";
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(n) {
+      if (!n.nodeValue || !/[A-Za-z]/.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+      if (!n.parentElement || n.parentElement.closest(skip)) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  const used = new Set();
+  nodes.forEach(n => {
+    const src = escapeHTML(n.nodeValue);
+    const out = glossify(src, used);
+    if (out === src) return;
+    const holder = document.createElement("span");
+    holder.innerHTML = out;
+    n.parentNode.replaceChild(holder, n);
+  });
+}
+
+function renderGlossary() {
+  const list = [...GLOSSARY].sort((a, b) => a.t.localeCompare(b.t));
+  $("glosslist").innerHTML = list.map(e => `<li>
+    <p class="g-term">${escapeHTML(e.t)}</p>
+    <p class="g-full">In short. ${escapeHTML(e.g)}.</p>
+    <p class="g-plain">${escapeHTML(e.plain)}</p></li>`).join("");
+}
+
+/* The four price indices, named the way a person would say them out loud. */
+const INDEX_NAME = {
+  BCI: "Capesize ships, the biggest (BCI)",
+  BPI: "Panamax ships, large (BPI)",
+  BSI: "Supramax ships, medium (BSI)",
+  BHSI: "Handysize ships, small (BHSI)"
+};
+const indexName = k => INDEX_NAME[k] || k;
+
+/* The three answers this system can give, said in words a buyer uses rather than
+   in words a shipbroker uses. The service still speaks its own language, so its
+   headline is kept as the fallback. */
+const ACTION = {
+  fix_now: {
+    title: "Book the ship now.",
+    plain: "Sign the hire agreement at today's price rather than holding out for a cheaper one."
+  },
+  wait: {
+    title: "Wait before booking.",
+    plain: "Hold off for now. The forecast expects hire prices to fall by more than the risk of them rising."
+  },
+  split: {
+    title: "Split the load between two smaller ships.",
+    plain: "Buy the same total tonnage, but bring it in as two smaller shiploads. Two smaller ships can each be filled here, and one large ship cannot."
+  }
+};
 
 /* Cargo names and stowage factors come from data/reference/cargo_types.json via
    /ml/reference. Nothing about cargo is hard coded in this page. */
@@ -185,25 +748,33 @@ function readError(d, status) {
    is responsive even if the service is slow or down. */
 function wireEvents() {
   document.querySelectorAll("nav .tabbtn").forEach(btn => {
-    btn.addEventListener("click", () => tab(Number(btn.dataset.page), btn));
+    btn.addEventListener("click", () => tab(btn.dataset.page, btn));
   });
   $("cargoform").addEventListener("submit", ev => { ev.preventDefault(); run(); });
   $("origin").addEventListener("change", syncCargo);
+  $("pg_origin").addEventListener("change", syncProgrammeCargo);
   $("cargo").addEventListener("change", showStowage);
-  $("ik").addEventListener("change", drawChart);
+  $("ik").addEventListener("change", () => { drawChart(); loadTiming(); });
   $("hz").addEventListener("change", () => { if (!$("p1").hidden) drawChart(); });
   $("wxrefresh").addEventListener("click", () => loadPortLive(true));
+  $("pgform").addEventListener("submit", ev => { ev.preventDefault(); runProgramme(); });
+  $("cmpbtn").addEventListener("click", runCompare);
+  $("riskbtn").addEventListener("click", () => loadRisk(true));
 }
 
 async function boot() {
   wireEvents();
+  buildGlossary();
+  renderGlossary();
+  glossifyStatic();
   try {
     const h = await getJSON(API + "/ml/health");
     const b = $("src");
     b.className = "v " + (h.is_real_data ? "real" : "scaffold");
     b.textContent = h.is_real_data
-      ? `real market data, ${Number(h.rows).toLocaleString("en-IN")} rows, ${h.date_from} to ${h.date_to}`
-      : `scaffolding, not a real market, ${Number(h.rows).toLocaleString("en-IN")} rows`;
+      ? `real published market prices, ${Number(h.rows).toLocaleString("en-IN")} days of them, `
+        + `${h.date_from} to ${h.date_to}`
+      : `stand-in numbers, not the real market, ${Number(h.rows).toLocaleString("en-IN")} days of them`;
 
     REF = await getJSON(API + "/ml/reference");
     const o = $("origin");
@@ -213,15 +784,34 @@ async function boot() {
     p.value = "Durgapur";
     syncCargo();
 
+    // The programme screen asks the same three questions and must not depend on the
+    // first screen having been used, so it gets its own copies of the lists.
+    const po = $("pg_origin");
+    REF.origins.forEach(x => po.add(new Option(x.name, x.code)));
+    const pp = $("pg_plant");
+    REF.plants.forEach(x => pp.add(new Option(x, x)));
+    pp.value = "Durgapur";
+    syncProgrammeCargo();
+
     SKILL = await getJSON(API + "/ml/skill");
     renderSkill();
+    loadTiming();
     renderPorts();
     drawChart();
     loadPortLive(false);
   } catch (e) {
-    $("out").innerHTML = `<div class="errbox"><b>Could not load reference data.</b>
-      ${escapeHTML(e.message)} Confirm the service is running, then reload this page.</div>`;
+    $("out").innerHTML = `<div class="errbox"><b>The reference information this page needs
+      could not be loaded, so nothing on it will work yet.</b>
+      ${escapeHTML(e.message)} Check that the service behind this page is running, then reload
+      this page in the browser.</div>`;
   }
+}
+
+/* Mark the trade words in everything that was written straight into the page.
+   Everything else is marked by whichever function rendered it. */
+function glossifyStatic() {
+  glossifyElement(document.querySelector("header.titleblock"));
+  ["p0", "p1", "p2", "p3", "p5", "p6", "p7"].forEach(id => glossifyElement($(id)));
 }
 
 /* Only offer cargo types the selected origin actually supplies. This removes a whole
@@ -237,8 +827,24 @@ function syncCargo() {
   origin.cargo.forEach(c => sel.add(new Option(prettyCargo(c), c)));
   if (origin.cargo.includes(previous)) sel.value = previous;
   $("originhint").textContent =
-    `${origin.name} supplies ${origin.cargo.length} cargo type${origin.cargo.length === 1 ? "" : "s"} in this system.`;
+    `${origin.name} ships ${plural(origin.cargo.length, "of the materials", "of the materials")} `
+    + `this system knows about, so only those are offered in the box below.`;
+  glossifyElement($("originhint"));
   showStowage();
+}
+
+/* The programme screen's own cargo list, kept honest the same way. Only offering
+   what the chosen country actually ships removes a whole class of confusing errors
+   before it can happen. */
+function syncProgrammeCargo() {
+  if (!REF) return;
+  const origin = REF.origins.find(o => o.code === $("pg_origin").value);
+  const sel = $("pg_cargo");
+  const previous = sel.value;
+  sel.innerHTML = "";
+  if (!origin) return;
+  origin.cargo.forEach(c => sel.add(new Option(prettyCargo(c), c)));
+  if (origin.cargo.includes(previous)) sel.value = previous;
 }
 
 /* Explain, before the user even asks for a recommendation, why this cargo will
@@ -248,18 +854,26 @@ function showStowage() {
   const el = $("cargohint");
   if (!c) { el.textContent = ""; return; }
   el.textContent =
-    `Stowage factor ${c.stowage_factor_m3_per_t} m³ per tonne. ` +
+    `One tonne of this takes up ${c.stowage_factor_m3_per_t} cubic metres of space in the hold, `
+    + `which is what a stowage factor means. ` +
     (c.stowage_factor_m3_per_t < 0.9
-      ? "Dense, so it weighs out and leaves hold space empty."
-      : "Bulky, so it may cube out and fill the holds before reaching deadweight.") +
-    ` Handling rate ${Number(c.handling_rate_multiplier).toFixed(2)} times the port norm.`;
+      ? "That is dense material, so the ship reaches the weight it is allowed to carry while the "
+        + "holds still look half empty. It weighs out."
+      : "That is bulky material, so the holds can fill up before the ship reaches the weight it "
+        + "is allowed to carry. It cubes out, and then it sails lighter than it could.") +
+    ` Ports handle it at ${Number(c.handling_rate_multiplier).toFixed(2)} times their normal `
+    + `unloading speed.`;
+  glossifyElement(el);
 }
 
-function tab(i, el) {
-  document.querySelectorAll(".page").forEach((p, j) => { p.hidden = (i !== j); });
+function tab(id, el) {
+  document.querySelectorAll(".page").forEach(p => { p.hidden = (p.id !== id); });
   document.querySelectorAll("nav button").forEach(b => b.removeAttribute("aria-current"));
   el.setAttribute("aria-current", "page");
   $("main").focus();
+  // Screens that fetch their own content do it the first time they are opened, so
+  // nothing slow happens while the page is still loading.
+  if (id === "p7" && !RISK_LOADED) loadRisk();
 }
 
 async function run() {
@@ -269,21 +883,23 @@ async function run() {
   const qty = Number($("qty").value);
 
   if (!origin || !cargo) {
-    out.innerHTML = `<div class="errbox"><b>Reference data is not loaded yet.</b>
-      Wait a moment for the origin and cargo lists to populate, then try again.</div>`;
+    out.innerHTML = `<div class="errbox"><b>This page is still loading its lists of countries
+      and materials.</b> Wait a moment for the two boxes at the top of the form to fill in,
+      then choose the button again.</div>`;
     return;
   }
   if (!(qty > 0)) {
-    out.innerHTML = `<div class="errbox"><b>Enter a quantity greater than zero.</b></div>`;
+    out.innerHTML = `<div class="errbox"><b>Please enter how many tonnes you need. It has to be
+      a number greater than zero.</b></div>`;
     $("qty").focus();
     return;
   }
 
   btn.disabled = true;
-  btn.textContent = "Computing…";
+  btn.textContent = "Working it out…";
   out.setAttribute("aria-busy", "true");
-  out.innerHTML = `<div class="empty" role="status">Evaluating every vessel class against
-    every East Coast discharge port…</div>`;
+  out.innerHTML = `<div class="empty" role="status">Checking every size of ship against every
+    port on the east coast of India, and pricing each one. This takes a few seconds.</div>`;
 
   try {
     const d = await getJSON(API + "/ml/recommend", {
@@ -299,7 +915,7 @@ async function run() {
     });
     render(d);
   } catch (e) {
-    out.innerHTML = `<div class="errbox"><b>No recommendation was produced.</b>
+    out.innerHTML = `<div class="errbox"><b>No recommendation could be produced this time.</b>
       ${escapeHTML(e.message)}</div>`;
   } finally {
     btn.disabled = false;
@@ -385,46 +1001,53 @@ function render(d) {
   const r = d.recommendation;
   const best = d.options[0];
   const plant = $("plant").value;
+  const act = ACTION[r.action];
 
   let h = `<section class="verdict ${escapeHTML(r.action)}" aria-label="Recommendation">
     <div class="verdict-top">
       <div>
-        <h3>${escapeHTML(r.headline)}</h3>
-        ${best ? `<p class="why"><b>${escapeHTML(best.vessel_class)}</b> to
-          <b>${escapeHTML(best.discharge_port)}</b>. ${escapeHTML(r.reason)}</p>`
-               : `<p class="why">${escapeHTML(r.reason)}</p>`}
+        <p class="kicker">What we advise you to do</p>
+        <h3>${escapeHTML(act ? act.title : r.headline)}</h3>
+        ${act ? `<p class="what">${escapeHTML(act.plain)}</p>` : ""}
+        ${best ? `<p class="why">Hire one <b>${escapeHTML(best.vessel_class)}</b> and unload it at
+          <b>${escapeHTML(best.discharge_port)}</b>. ${escapeHTML(sentence(r.reason))}</p>`
+               : `<p class="why">${escapeHTML(sentence(r.reason))}</p>`}
       </div>
       ${best ? `<p class="headline-price">
         <span class="amt">${money(best.landed_cost_usd_per_tonne)}</span>
-        <span class="unit">landed per tonne at the plant gate</span>
-        <span class="inr">${inr(best.landed_cost_inr_per_tonne)}</span>
+        <span class="unit">is what one tonne costs by the time it reaches the plant gate</span>
+        <span class="inr">${inr(best.landed_cost_inr_per_tonne)} a tonne</span>
       </p>` : ""}
     </div>
     ${best ? routeLine(best, plant) : ""}
-    <ul class="drivers">
+    <ul class="drivers" aria-label="The main reasons behind this answer">
       ${(r.drivers || []).map(x => `<li class="chip">${escapeHTML(x)}</li>`).join("")}
       <li class="chip">${escapeHTML(r.confidence_label)}</li>
     </ul></section>`;
 
   if (d.arrival_window) {
-    h += `<p class="cite" style="margin:-12px 0 20px">${escapeHTML(d.arrival_window.note)}</p>`;
+    h += `<p class="cite" style="margin:-12px 0 20px">Dates used.
+      ${escapeHTML(d.arrival_window.note)}</p>`;
   }
   if (d.port_intelligence && d.port_intelligence.ports_with_declarations) {
-    h += `<div class="decl" style="margin:0 0 22px"><b>What the ports themselves say.</b>
+    h += `<div class="decl" style="margin:0 0 22px"><b>What the ports themselves have told us.</b>
       ${escapeHTML(d.port_intelligence.headline)}
-      Demand sits beside the ranking and never inside it, because a port wanting a
-      cargo does not make that cargo cheaper to deliver there. The full picture is on
-      the capacity and weather sheet.</div>`;
+      A port saying it wants your material is shown beside the ranking and never inside it,
+      because wanting a cargo does not make that cargo any cheaper to deliver there. The whole
+      picture is on the live port space and weather screen.</div>`;
   }
 
   if (!d.options.length) {
-    h += `<div class="empty">No feasible vessel and port combination was found.
-      Every candidate is listed below with the constraint that ruled it out.</div>`;
+    h += `<div class="empty">There is no ship and port combination that can physically do this
+      job. Every one that was considered is listed below, with the rule that ruled it out.
+      Try a smaller quantity, or a different destination plant.</div>`;
   } else {
-    h += `<h2>Ranked by landed cost. ${d.options.length} feasible</h2>
-      <p class="lead">The column beside each option is a draft mark. The filled part is
-      how much of that ship this port can actually load. A voyage costs the same
-      whether she sails full or half full, so the empty part is money nobody gets back.</p>`;
+    h += `<h2>Every workable answer, cheapest first. ${d.options.length} of them</h2>
+      <p class="lead">The tall bar beside each answer is a picture of how full that ship would
+      actually sail. The filled part is the cargo it can carry into that particular port. The
+      empty part is space you would still be paying for, because a voyage costs very nearly the
+      same whether the ship goes out full or half full. That is the whole reason the biggest
+      ship is not always the cheapest one.</p>`;
     d.options.forEach((o, i) => {
       const b = o.cost_breakdown_usd_per_tonne, t = o.time_breakdown_days;
       h += `<article class="opt ${i === 0 ? "best" : ""}">
@@ -433,74 +1056,80 @@ function render(d) {
         <div class="opt-top">
           <div>
             <h3 class="opt-name">${i === 0 ? '<span class="rank">Best</span>' : ""}${escapeHTML(o.vessel_class)}
-              to ${escapeHTML(o.discharge_port)}</h3>
+              unloading at ${escapeHTML(o.discharge_port)}</h3>
             <p class="opt-sub">${escapeHTML(sentence(o.reason))}</p>
           </div>
           <p class="price">
             <span class="amt">${money(o.landed_cost_usd_per_tonne)}</span>
-            <span class="unit">per tonne delivered</span>
-            <span class="unit">${inr(o.landed_cost_inr_per_tonne)} per tonne</span>
+            <span class="unit">for each tonne, delivered to the plant</span>
+            <span class="unit">${inr(o.landed_cost_inr_per_tonne)} for each tonne</span>
           </p>
         </div>
         <ul class="meta">
-          <li>Loads <b>${tonnes(o.deliverable_tonnes)} t</b> of
-            <b>${tonnes(o.nominal_capacity_tonnes)} t</b></li>
-          <li>That is <b>${o.load_percentage}%</b> of her</li>
-          <li>Voyage <b>${o.total_days} days</b></li>
-          <li>Hire <b>$${Number(o.tce_usd_per_day).toLocaleString("en-US")} a day</b></li>
-          ${o.demand_rank ? `<li>Operator demand rank <b>${o.demand_rank}</b></li>` : ""}
+          <li>Actually carries <b>${tonnes(o.deliverable_tonnes)} tonnes</b>
+            out of a possible <b>${tonnes(o.nominal_capacity_tonnes)}</b></li>
+          <li>So it sails <b>${o.load_percentage}%</b> full</li>
+          <li>The whole trip takes <b>${o.total_days} days</b></li>
+          <li>Hiring the ship costs <b>$${Number(o.tce_usd_per_day).toLocaleString("en-US")} a day</b></li>
+          ${o.demand_rank ? `<li>This port's own demand rank for your material is
+            <b>${o.demand_rank}</b></li>` : ""}
         </ul>
         <ul class="flags">
-          ${o.cubes_out ? `<li><span class="flag-cube">Cubes out</span></li>` : ""}
-          <li><span class="wx ${escapeHTML(o.weather_risk_band || "unknown")}">Weather
+          ${o.cubes_out ? `<li><span class="flag-cube">Cubes out, so hold space runs out
+            before weight does</span></li>` : ""}
+          <li><span class="wx ${escapeHTML(o.weather_risk_band || "unknown")}">Weather risk
             ${escapeHTML(o.weather_risk_band || "unknown")}${o.weather_delay_days
-              ? `, ${plural(o.weather_delay_days, "delay day")}`
+              ? `, expect to lose ${plural(o.weather_delay_days, "day")}`
               : ""}</span></li>
         </ul>
         ${o.operator_declared ? `<div class="decl">
           <b>Declared by the port operator.</b>
           ${escapeHTML(o.declared_area_note || "This port has a live declaration on file")}.
           ${o.declared_area && o.declared_area.availability_note
-            ? "Availability. " + escapeHTML(o.declared_area.availability_note) + "."
+            ? "When it is free. " + escapeHTML(o.declared_area.availability_note) + "."
             : ""}
           ${o.declared_area && o.declared_area.alternatives
             ? ` ${o.declared_area.alternatives} further area${o.declared_area.alternatives === 1 ? "" : "s"}
-                at this port also accept${o.declared_area.alternatives === 1 ? "s" : ""} this class.`
+                at this port also accept${o.declared_area.alternatives === 1 ? "s" : ""} this size of ship.`
             : ""}
-          ${o.demand_rank ? ` This operator ranks the cargo you asked for number
-            ${o.demand_rank} in their own demand list${o.indicative_price_inr_per_tonne
-              ? `, indicating ${inr(o.indicative_price_inr_per_tonne)} per tonne` : ""}.` : ""}
+          ${o.demand_rank ? ` This operator puts the material you asked for at number
+            ${o.demand_rank} on their own list of what they most want${o.indicative_price_inr_per_tonne
+              ? `, and suggests ${inr(o.indicative_price_inr_per_tonne)} a tonne` : ""}.` : ""}
           ${o.demand_note ? " " + escapeHTML(o.demand_note) : ""}
         </div>` : ""}
         ${o.weather_delay_days ? `<div class="advisory" style="margin:14px 0 0">
-          <b>Weather advisory.</b> ${escapeHTML(o.weather_headline)}</div>` : ""}
+          <b>Weather warning.</b> ${escapeHTML(o.weather_headline)}</div>` : ""}
         <details class="bd">
-          <summary>Where the money and the days go</summary>
-          <div class="bdrow"><span>Freight, hire plus ballast allowance</span><b>${money(b.freight)}/t</b></div>
-          <div class="bdrow"><span>Expected demurrage, ${t.waiting} day wait</span><b>${money(b.expected_demurrage)}/t</b></div>
-          <div class="bdrow"><span>Weather delay, ${t.weather_delay || 0} forecast day${t.weather_delay === 1 ? "" : "s"} lost</span><b>${money(b.weather_delay || 0)}/t</b></div>
-          <div class="bdrow"><span>Port charges</span><b>${money(b.port_charges)}/t</b></div>
-          <div class="bdrow"><span>Lightering${o.lightered_tonnes ? `, ${tonnes(o.lightered_tonnes)} t` : ""}</span><b>${money(b.lightering)}/t</b></div>
-          <div class="bdrow"><span>Inland movement to plant${o.inland_km ? `, ${o.inland_km} km` : ""}</span><b>${money(b.inland)}/t</b></div>
-          <div class="bdrow total"><span>Landed cost per tonne</span><b>${money(o.landed_cost_usd_per_tonne)}/t</b></div>
-          <div class="bdrow" style="margin-top:14px"><span>Weight ceiling, from draft and deadweight</span>
-            <b>${tonnes(o.weight_capacity_tonnes)} t</b></div>
-          <div class="bdrow"><span>Volume ceiling, ${o.grain_capacity_m3
-            ? tonnes(o.grain_capacity_m3) + " m³ of hold at " + o.stowage_factor_m3_per_t + " m³/t"
-            : "not modelled"}</span>
-            <b>${o.volume_capacity_tonnes ? tonnes(o.volume_capacity_tonnes) + " t" : "n/a"}</b></div>
-          <div class="bdrow"><span>Which ceiling binds</span>
-            <b>${o.cubes_out ? "Volume, she cubes out" : "Weight, she weighs out"}</b></div>
+          <summary>Show me where the money goes and where the days go</summary>
+          <div class="bdrow"><span>Hiring the ship for the voyage, including the empty run to
+            go and collect the cargo</span><b>${money(b.freight)} a tonne</b></div>
+          <div class="bdrow"><span>Waiting charge, called demurrage, for an expected
+            ${t.waiting} day wait</span><b>${money(b.expected_demurrage)} a tonne</b></div>
+          <div class="bdrow"><span>Weather delay, ${t.weather_delay || 0} working day${t.weather_delay === 1 ? "" : "s"} expected to be lost</span><b>${money(b.weather_delay || 0)} a tonne</b></div>
+          <div class="bdrow"><span>Port charges for taking the ship in and unloading it</span><b>${money(b.port_charges)} a tonne</b></div>
+          <div class="bdrow"><span>Lightering${o.lightered_tonnes ? `, ${tonnes(o.lightered_tonnes)} tonnes of it` : ""}</span><b>${money(b.lightering)} a tonne</b></div>
+          <div class="bdrow"><span>Road or rail from the port to the plant${o.inland_km ? `, ${o.inland_km} km` : ""}</span><b>${money(b.inland)} a tonne</b></div>
+          <div class="bdrow total"><span>Total cost of one tonne at the plant gate</span><b>${money(o.landed_cost_usd_per_tonne)} a tonne</b></div>
+          <div class="bdrow" style="margin-top:14px"><span>The most it could carry by weight,
+            once the port's depth and the ship's own deadweight are allowed for</span>
+            <b>${tonnes(o.weight_capacity_tonnes)} tonnes</b></div>
+          <div class="bdrow"><span>The most it could carry by space, ${o.grain_capacity_m3
+            ? tonnes(o.grain_capacity_m3) + " cubic metres of hold, at " + o.stowage_factor_m3_per_t + " cubic metres a tonne"
+            : "not worked out for this cargo"}</span>
+            <b>${o.volume_capacity_tonnes ? tonnes(o.volume_capacity_tonnes) + " tonnes" : "not applicable"}</b></div>
+          <div class="bdrow"><span>Which of those two limits stops the loading first</span>
+            <b>${o.cubes_out ? "Space. It cubes out" : "Weight. It weighs out"}</b></div>
           <p class="assume">${o.cubes_out
-            ? `This cargo fills the holds before the ship reaches her deadweight, so
-               ${tonnes(o.nominal_capacity_tonnes - o.deliverable_tonnes)} t of carrying
-               capacity is unusable. Lightering cannot help, because hold space is fixed.`
-            : `Binding constraint is the ${escapeHTML(o.binding_constraint)} draft of
-               ${o.binding_draft_m} m against a vessel laden draft of
-               ${o.vessel_laden_draft_m} m.`}
-            Handling runs at ${Number(o.cargo_handling_multiplier).toFixed(2)} times the port norm for this cargo.
-            Cost figures use editable assumptions from cost_assumptions.json, and stowage
-            figures from cargo_types.json.</p>
+            ? `This material fills the holds before the ship reaches the weight it is allowed to
+               carry, so ${tonnes(o.nominal_capacity_tonnes - o.deliverable_tonnes)} tonnes of
+               carrying ability go unused. Unloading some at sea cannot help here, because the
+               space inside the holds is fixed.`
+            : `What stops the loading is the ${escapeHTML(o.binding_constraint)} depth of
+               ${o.binding_draft_m} metres, against a ship that sits
+               ${o.vessel_laden_draft_m} metres deep when loaded.`}
+            This port handles this material at ${Number(o.cargo_handling_multiplier).toFixed(2)}
+            times its normal speed. The cost figures come from cost_assumptions.json and the
+            space figures from cargo_types.json, and both files can be edited.</p>
           ${provenanceList(o.provenance)}
         </details>
         </div>
@@ -508,10 +1137,42 @@ function render(d) {
     });
   }
 
+  if (d.idle_summary) {
+    const i = d.idle_summary, r = i.recommended || {};
+    h += `<h2>Time the ship spends earning nothing</h2>
+      <p class="lead">${escapeHTML(i.headline)}</p>
+      <div class="card">
+        <ul class="meta" style="gap:14px 34px">
+          <li>Waiting for a berth <b>${plural(r.waiting_days || 0, "day")}</b></li>
+          <li>Waiting out weather <b>${plural(r.weather_days || 0, "day")}</b></li>
+          <li>Sailing empty to collect the cargo <b>${plural(r.ballast_days || 0, "day")}</b></li>
+          <li>Actually loading and unloading <b>${plural(r.working_days || 0, "day")}</b></li>
+          <li>At sea with the cargo <b>${plural(r.sea_laden_days || 0, "day")}</b></li>
+        </ul>
+        <p class="dayline">Waiting and sailing empty together cost
+          <b class="fig" style="color:var(--chartwhite)">${money(r.unproductive_cost_usd_per_tonne || 0)}</b>
+          of every tonne, which is <b>${r.unproductive_share_percent || 0}%</b> of the whole
+          bill. ${escapeHTML(i.note)}</p>
+        ${i.least_idle_alternative ? `<div class="decl" style="margin-top:16px">
+          <b>The alternative with the least waiting.</b>
+          A ${escapeHTML(i.least_idle_alternative.vessel_class)} into
+          ${escapeHTML(i.least_idle_alternative.discharge_port)} waits
+          ${plural(i.least_idle_alternative.idle_days_saved, "day")} less, which saves
+          ${money(i.least_idle_alternative.idle_saving_usd_per_tonne)} a tonne of waiting
+          charges. It lands at ${money(i.least_idle_alternative.landed_cost_usd_per_tonne)} a
+          tonne overall, which is
+          ${i.least_idle_alternative.extra_cost_usd_per_tonne > 0
+            ? money(i.least_idle_alternative.extra_cost_usd_per_tonne) + " a tonne more than the recommendation, so the shorter queue does not pay for itself here"
+            : "cheaper than the recommendation as well"}.
+        </div>` : ""}
+      </div>`;
+  }
+
   if (d.rejected.length) {
-    h += `<h2>Ruled out. ${d.rejected.length} combinations</h2>
-      <p class="lead">Shown on purpose. Knowing what the system refused, and on whose
-      authority, is what makes the recommendation above worth trusting.</p>`;
+    h += `<h2>Ruled out. ${d.rejected.length} ship and port combinations the system refused</h2>
+      <p class="lead">These are shown on purpose. Seeing what the system refused, and on whose
+      authority it refused it, is what makes the answer above worth trusting. Most refusals are
+      physical. The ship is too long, too wide, or sits too deep for that port.</p>`;
     d.rejected.slice(0, 10).forEach(x => {
       h += `<article class="rej">
         <div class="rej-h">
@@ -519,11 +1180,12 @@ function render(d) {
           <span class="tag">${escapeHTML(x.failed_constraint)}</span>
         </div>
         <p>${escapeHTML(x.explanation)}</p>
-        <p class="cite">Source. ${escapeHTML(x.source_citation)}</p>
+        <p class="cite">Where that limit comes from. ${escapeHTML(x.source_citation)}</p>
       </article>`;
     });
   }
   $("out").innerHTML = h;
+  glossifyElement($("out"));
 }
 
 /* Every figure the cost model reads carries one of three provenance labels, and
@@ -532,11 +1194,19 @@ function render(d) {
    placeholder and is still unverified. Showing which is which is the whole reason
    an operator declaration is worth collecting. */
 const FIELD_NAMES = {
-  discharge_rate_tonnes_per_day: "Discharge rate, tonnes a day",
-  typical_wait_days: "Typical wait for a berth, days",
-  port_charge_usd_per_tonne: "Port charges, dollars a tonne",
-  lightering_cost_usd_per_tonne: "Lightering, dollars a tonne",
-  max_draft_m: "Maximum draft, metres"
+  discharge_rate_tonnes_per_day: "tonnes a day this port can unload",
+  typical_wait_days: "days a ship usually waits here for a berth",
+  port_charge_usd_per_tonne: "dollars a tonne in port charges",
+  lightering_cost_usd_per_tonne: "dollars a tonne to unload at sea into smaller boats",
+  max_draft_m: "metres, the deepest ship this port can take"
+};
+
+/* The three labels in ordinary English. A reader should never have to guess what
+   the difference between them is, because the difference is the entire point. */
+const PROV_PLAIN = {
+  "PUBLISHED": "taken from a public document, named underneath",
+  "OPERATOR DECLARED": "stated by this port's own staff, named and dated underneath",
+  "ASSUMPTION": "a placeholder we chose ourselves, still unconfirmed"
 };
 
 const provClass = src => src === "OPERATOR DECLARED" ? "declared"
@@ -548,13 +1218,15 @@ function provenanceList(prov) {
   if (!keys.length) return "";
   const declared = keys.filter(k => prov[k].source === "OPERATOR DECLARED").length;
   return `<div style="margin-top:16px;border-top:1px solid var(--drying);padding-top:14px">
-    <p class="cite" style="margin:0 0 10px">Where each figure came from.
-      ${declared} of ${keys.length} ${declared === 1 ? "was" : "were"} declared by the
-      operator of this port.</p>
+    <p class="cite" style="margin:0 0 10px">Where each of these numbers came from.
+      ${declared} of the ${keys.length} ${declared === 1 ? "was" : "were"} stated by the staff
+      of this port themselves. Anything marked assumption is our own placeholder and has not
+      been confirmed with anybody.</p>
     <ol class="plain">${keys.map(k => `<li>
       <span class="fig" style="font-size:16px;color:var(--chartwhite)">${prov[k].value}</span>
       <span style="font-size:15px"> ${escapeHTML(FIELD_NAMES[k] || k)}</span>
       <span class="prov ${provClass(prov[k].source)}">${escapeHTML(prov[k].source)}</span>
+      <span class="provplain">${escapeHTML(PROV_PLAIN[prov[k].source] || "")}</span>
       <p class="dayline">${escapeHTML(prov[k].citation)}</p></li>`).join("")}</ol>
   </div>`;
 }
@@ -565,17 +1237,18 @@ function provenanceList(prov) {
 async function loadPortLive(refresh) {
   const host = $("portlive"), btn = $("wxrefresh");
   btn.disabled = true;
-  if (refresh) btn.textContent = "Fetching every forecast…";
+  if (refresh) btn.textContent = "Getting the latest weather…";
   try {
     DECL = await getJSON(API + "/ml/ports/declarations");
     WX = await getJSON(API + "/ml/weather" + (refresh ? "?refresh=true" : ""));
     host.innerHTML = renderPortLive();
+    glossifyElement(host);
   } catch (e) {
-    host.innerHTML = `<div class="errbox"><b>Declared capacity and weather could not be
-      loaded.</b> ${escapeHTML(e.message)}</div>`;
+    host.innerHTML = `<div class="errbox"><b>What the ports have told us, and the weather,
+      could not be loaded.</b> ${escapeHTML(e.message)}</div>`;
   } finally {
     btn.disabled = false;
-    btn.textContent = "Refresh every forecast now";
+    btn.textContent = "Get the latest weather for every port now";
   }
 }
 
@@ -583,14 +1256,16 @@ function renderPortLive() {
   const wxByPort = {};
   (WX.ports || []).forEach(w => { wxByPort[w.port_code] = w; });
 
-  let h = `<h2>Declared capacity. ${DECL.ports_declared} of ${DECL.ports_total} ports
-    have declared</h2>
+  let h = `<h2>What the ports have told us. ${DECL.ports_declared} of ${DECL.ports_total}
+    ports have filled this in</h2>
     <p class="lead">${escapeHTML(DECL.provenance_note)}</p>`;
 
   if (WX.offline_mode) {
-    h += `<div class="warnbox"><b>Offline mode is on.</b> Every forecast below came from
-      the cache and no network call was made. Unset FREIGHT_WEATHER_OFFLINE and refresh
-      to fetch current ones.</div>`;
+    h += `<div class="warnbox"><b>This system is running with the internet switched off on
+      purpose.</b> Every forecast below is a saved copy, so none of it was fetched just now and
+      some of it may be out of date. That is deliberate, because a live demonstration should
+      never depend on somebody else's website being up. Clearing the setting called
+      FREIGHT_WEATHER_OFFLINE and choosing the button above will fetch current forecasts.</div>`;
   }
 
   h += DECL.ports.map(pt => {
@@ -604,43 +1279,46 @@ function renderPortLive() {
         <span class="wx ${escapeHTML(band)}">Weather ${escapeHTML(band)}</span></h3>
       <p class="sub">${escapeHTML(pt.state || "")}, port code ${escapeHTML(pt.port_code)}</p>`;
 
-    x += `<h4>Weather advisory</h4>`;
+    x += `<h4>Weather outlook for the next few days</h4>`;
     if (adv.headline) {
       x += `<p style="margin:0;font-size:15.5px">${escapeHTML(adv.headline)}</p>
         <p style="margin:8px 0 0;font-size:15px;color:var(--sounding)">Expected weather delay
-          <b class="fig" style="color:var(--chartwhite)">${plural(adv.expected_weather_delay_days, "day")}</b>,
-          added to waiting time and priced as demurrage in every landed cost shown for
-          this port.</p>
-        <p class="cite">Forecast ${escapeHTML(fresh.source || "unknown")}${fresh.fetched_at
-          ? ", fetched " + escapeHTML(String(fresh.fetched_at).replace("T", " at ")) : ""}${fresh.stale
-          ? ". Stale. " + escapeHTML(fresh.note || "") : ""}</p>`;
+          <b class="fig" style="color:var(--chartwhite)">${plural(adv.expected_weather_delay_days, "day")}</b>.
+          Those days are added to the waiting time, and you are charged for them at the daily
+          waiting rate, so they are already inside every cost shown for this port.</p>
+        <p class="cite">Forecast supplied by ${escapeHTML(fresh.source || "an unknown source")}${fresh.fetched_at
+          ? ", collected " + escapeHTML(String(fresh.fetched_at).replace("T", " at ")) : ""}${fresh.stale
+          ? ". This copy is old. " + escapeHTML(fresh.note || "") : ""}</p>`;
       const bad = ((w.quay && w.quay.days) || []).filter(d => !d.workable);
       if (bad.length) {
         x += `<ol class="plain">${bad.map(d => `<li>
           <span class="fig" style="font-size:16px">${escapeHTML(d.date)}</span>
-          <span class="no" style="margin-left:8px">Not workable at the quay</span>
+          <span class="no" style="margin-left:8px">No unloading possible at the dock</span>
           <p class="dayline">${escapeHTML(d.breaches.join(". "))}.</p></li>`).join("")}</ol>`;
       }
     } else {
-      x += `<p style="margin:0;font-size:15px;color:var(--sounding)">No forecast is cached
-        for this port, so no weather delay has been added to its costs. That is not a
-        claim that the weather is good. Select refresh every forecast now.</p>`;
+      x += `<p style="margin:0;font-size:15px;color:var(--sounding)">We have no saved forecast
+        for this port, so no weather delay has been added to its costs. That is not the same as
+        saying the weather will be fine. It means we do not know. Choose the button at the top
+        of this screen to go and get one.</p>`;
     }
 
     if (!pt.has_declaration) {
-      x += `<h4>Operator declaration</h4>
+      x += `<h4>What this port has told us</h4>
         <p style="margin:0;font-size:15px;color:var(--sounding)">The operator of this port
-        has not declared anything. Costs and limits shown for it come from our published
-        and assumed reference values only.</p></section>`;
+        has not declared anything. Everything this system shows for it therefore comes from
+        published documents and from our own placeholder figures, not from the port.</p></section>`;
       return x;
     }
 
     x += `<h4>Declared by ${escapeHTML(pt.declared_by || "the port operator")} on
       ${escapeHTML(String(pt.updated_at).slice(0, 10))}</h4>
       <p style="margin:0;font-size:15px;color:var(--sounding)">
-        <b class="fig" style="color:var(--chartwhite)">${pt.area_count}</b> handling area${pt.area_count === 1 ? "" : "s"},
-        <b class="fig" style="color:var(--chartwhite)">${Number(pt.total_area_sq_m).toLocaleString("en-IN")}</b> square metres in total,
-        <b class="fig" style="color:var(--chartwhite)">${Number(pt.total_storage_tonnes).toLocaleString("en-IN")}</b> tonnes of declared storage.</p>`;
+        They have
+        <b class="fig" style="color:var(--chartwhite)">${pt.area_count}</b> yard${pt.area_count === 1 ? "" : "s"}
+        available for handling cargo, covering
+        <b class="fig" style="color:var(--chartwhite)">${Number(pt.total_area_sq_m).toLocaleString("en-IN")}</b> square metres,
+        able to hold <b class="fig" style="color:var(--chartwhite)">${Number(pt.total_storage_tonnes).toLocaleString("en-IN")}</b> tonnes of material.</p>`;
 
     if (pt.areas.length) {
       x += `<ol class="plain">${pt.areas.map(a => `<li>
@@ -648,37 +1326,38 @@ function renderPortLive() {
         <span class="prov declared">OPERATOR DECLARED</span>
         <p class="dayline">${Number(a.area_sq_m || 0).toLocaleString("en-IN")} square metres.
           ${a.storage_capacity_tonnes ? "Holds " + Number(a.storage_capacity_tonnes).toLocaleString("en-IN") + " tonnes. " : ""}
-          Available ${escapeHTML(a.available_from || "now")} to ${escapeHTML(a.available_to || "open ended")}.
-          Accepts ${a.accepts_vessel_classes.length ? escapeHTML(a.accepts_vessel_classes.join(", ")) : "no vessel class, so it offers nothing"}.
-          ${a.max_draft_m ? "Berth draft " + a.max_draft_m + " metres. " : ""}
-          ${a.discharge_rate_tonnes_per_day ? "Discharges " + Number(a.discharge_rate_tonnes_per_day).toLocaleString("en-IN") + " tonnes a day. " : ""}
-          ${a.current_wait_days !== null && a.current_wait_days !== undefined ? "Waiting " + plural(a.current_wait_days, "day") + " now. " : ""}
+          Free from ${escapeHTML(a.available_from || "now")} until ${escapeHTML(a.available_to || "no stated end date")}.
+          Takes ${a.accepts_vessel_classes.length ? escapeHTML(a.accepts_vessel_classes.join(", ")) : "no size of ship at all, so it is of no use here"}.
+          ${a.max_draft_m ? "The water here is " + a.max_draft_m + " metres deep. " : ""}
+          ${a.discharge_rate_tonnes_per_day ? "It can unload " + Number(a.discharge_rate_tonnes_per_day).toLocaleString("en-IN") + " tonnes a day. " : ""}
+          ${a.current_wait_days !== null && a.current_wait_days !== undefined ? "Ships are waiting " + plural(a.current_wait_days, "day") + " to get in at the moment. " : ""}
           ${escapeHTML(a.notes || "")}</p></li>`).join("")}</ol>`;
     }
 
     if (pt.cargo_demand.length) {
-      x += `<h4>What this port most wants</h4>
+      x += `<h4>What this port says it most wants to receive</h4>
         <ol class="plain">${pt.cargo_demand.map(c => `<li>
           <b style="font-size:17px">Rank
             <span class="fig" style="color:var(--starboard)">${c.demand_rank}</span>.
             ${escapeHTML(c.cargo_name)}</b>
           <p class="dayline">
-            ${c.monthly_demand_tonnes ? Number(c.monthly_demand_tonnes).toLocaleString("en-IN") + " tonnes a month. " : ""}
-            ${c.indicative_price_inr_per_tonne ? "Indicative " + inr(c.indicative_price_inr_per_tonne) + " a tonne. " : ""}
+            ${c.monthly_demand_tonnes ? "They want about " + Number(c.monthly_demand_tonnes).toLocaleString("en-IN") + " tonnes a month. " : ""}
+            ${c.indicative_price_inr_per_tonne ? "They suggest a rough price of " + inr(c.indicative_price_inr_per_tonne) + " a tonne. " : ""}
             ${escapeHTML(c.notes || "")}</p></li>`).join("")}</ol>
-        <p class="cite">This ranking is the operator's own statement of what they are short
-          of. It never enters a landed cost, because wanting a cargo does not make that
-          cargo cheaper to ship.</p>`;
+        <p class="cite">This ranking is the port's own statement of what it is short of. It is
+          never allowed into a cost figure, because a port wanting a material does not make that
+          material any cheaper to ship there. It is shown because it tells you where you are
+          likely to be welcome, and where you may be able to negotiate.</p>`;
     }
 
     if (pt.operator_notes) {
-      x += `<h4>Notes from the operator</h4>
+      x += `<h4>Anything else the port wanted to say</h4>
         <p style="margin:0;font-size:15.5px">${escapeHTML(pt.operator_notes)}</p>`;
     }
     return x + "</section>";
   }).join("");
 
-  h += `<p class="cite">Weather from ${escapeHTML(WX.provider)} ${escapeHTML(WX.note)}</p>`;
+  h += `<p class="cite">Weather supplied by ${escapeHTML(WX.provider)}. ${escapeHTML(WX.note)}</p>`;
   return h;
 }
 
@@ -686,26 +1365,134 @@ function renderSkill() {
   const rows = SKILL.rows;
   $("skillbody").innerHTML = rows.map(r => `
     <li class="skill-item">
-      <p class="skill-head">${escapeHTML(r.index_key)} at ${r.horizon_days} days.
-        <span class="${r.has_skill ? "pos" : "neg"}">${r.has_skill ? "Has skill" : "NO SKILL"}</span></p>
+      <p class="skill-head">${escapeHTML(indexName(r.index_key))}, looking
+        ${r.horizon_days} days ahead.
+        <span class="${r.has_skill ? "pos" : "neg"}">${r.has_skill
+          ? "Better than the lazy guess" : "No better than the lazy guess"}</span></p>
       <ul class="skill-facts">
-        <li>Model error <b>${r.model_mae}</b></li>
-        <li>Naive error <b>${r.baseline_mae}</b></li>
+        <li>Our model was out by <b>${r.model_mae}</b> on average</li>
+        <li>The lazy guess was out by <b>${r.baseline_mae}</b> on average</li>
         <li>Skill score
           <b class="${r.skill_score > 0 ? "pos" : "neg"}">${r.skill_score > 0 ? "+" : ""}${r.skill_score.toFixed(4)}</b></li>
       </ul>
+      <p class="dayline">${r.has_skill
+        ? "Our model made smaller mistakes than simply assuming the price does not change, so "
+          + "this forecast is worth taking into account at this length of time."
+        : "Our model made mistakes at least as large as simply assuming the price does not "
+          + "change, so this forecast adds nothing at this length of time and the system will "
+          + "not advise you to wait on the strength of it."}</p>
     </li>`).join("");
+  glossifyElement($("skillbody"));
 
   const bad = rows.filter(r => !r.has_skill).length;
   $("skillwarn").innerHTML = bad === rows.length
-    ? `<div class="warnbox"><b>No forecasting skill at any horizon on the current dataset.</b>
-       This is the correct result while running on scaffolding data, which is generated as a
-       near random walk and therefore contains no signal to find. The decision engine is
-       hard wired to refuse a wait recommendation whenever skill is absent, so the system
-       falls back to fix now and says why. Load real index history into
-       <code>data/raw/baltic_indices.csv</code> to obtain the real answer.</div>`
-    : `<div class="warnbox">${bad} of ${rows.length} horizons show no skill. The decision
-       engine will not recommend waiting at those horizons.</div>`;
+    ? `<div class="warnbox"><b>Right now our price forecast is not reliable at any length of
+       time, so this system will not tell you to wait.</b>
+       That is the honest result and it is not a fault in the software. The system is currently
+       running on stand-in numbers rather than real market history, and those numbers were
+       deliberately generated to wander at random, so there is no pattern in them for any model
+       to find. Because the forecast cannot be trusted, the system falls back to advising you to
+       book now, and it tells you that is why. Real published price history dropped into the file
+       <code>data/raw/baltic_indices.csv</code> will be tested the same way, and the answer here
+       will change to match whatever that real data shows.</div>`
+    : `<div class="warnbox"><b>Our forecast is unreliable in ${bad} of the ${rows.length} cases
+       tested below.</b> In those cases the system will not advise you to wait for a better
+       price, because there is nothing solid to wait on.</div>`;
+  glossifyElement($("skillwarn"));
+}
+
+/* ======================================================================
+   THE TIMING SCAN. Every horizon at once, the calendar, and today's volatility.
+
+   The historical ratios shown here are the same measurement the buying programme
+   screen runs on, at a different period length. They are described as what happened
+   rather than as what will happen, everywhere they appear, because they are a record
+   and not a forecast. */
+
+async function loadTiming() {
+  const host = $("timing");
+  try {
+    const d = await getJSON(`${API}/ml/timing?index_key=${$("ik").value}`);
+    host.innerHTML = renderTiming(d);
+    glossifyElement(host);
+  } catch (e) {
+    host.innerHTML = `<div class="errbox">The timing scan could not be loaded.
+      ${escapeHTML(e.message)}</div>`;
+  }
+}
+
+function renderTiming(d) {
+  const v = d.volatility, s = d.seasonality;
+  let h = `<div class="card"><h3>Can our model see anything at all</h3>
+    <p class="opt-sub" style="max-width:var(--measure)">${escapeHTML(d.verdict)}</p>
+    <ol class="plain">`;
+  d.horizons.forEach(r => {
+    h += `<li>
+      <b style="font-size:17px">Deciding ${r.horizon_days} days ahead.</b>
+      <span class="${r.has_skill ? "pos" : "neg"}" style="margin-left:8px">${r.has_skill
+        ? "Our model beats the lazy guess" : "Our model does not beat the lazy guess"}</span>
+      <p class="dayline">Over every ${r.horizon_days} day stretch in the history, the spot
+        market typically ended up ${escapeHTML(asPercentOfToday(r.historical_median_ratio))},
+        and landed between ${escapeHTML(asPercentOfToday(r.historical_p10_ratio))} and
+        ${escapeHTML(asPercentOfToday(r.historical_p90_ratio))} eight times out of ten.
+        That is a record of what happened, and it holds whether or not our model works.</p>
+    </li>`;
+  });
+  h += `</ol></div>`;
+
+  h += `<div class="card"><h3>How unstable prices are right now</h3>`;
+  if (!v) {
+    h += `<p class="opt-sub">There is not enough history loaded to say how today compares
+      with a normal day for this index.</p>`;
+  } else {
+    h += `<p class="opt-sub" style="max-width:var(--measure)">${escapeHTML(v.plain)}</p>
+      <ul class="meta" style="gap:12px 30px">
+        <li>Movement over the last ${v.window_days} trading days
+          <b>${(v.annualised_volatility * 100).toFixed(0)}% a year</b></li>
+        <li>A normal day for this index <b>${(v.median_annualised_volatility * 100).toFixed(0)}% a year</b></li>
+        <li>Calmer than today on <b>${(v.percentile_of_history * 100).toFixed(0)}%</b> of all days ever</li>
+      </ul>
+      <p class="dayline">This matters on its own. The more prices are moving, the more a
+      rate agreed in advance is worth, whichever way anybody thinks the market is going.</p>`;
+  }
+  h += `</div>`;
+
+  h += `<div class="card"><h3>Does the time of year matter</h3>`;
+  if (!s) {
+    h += `<p class="opt-sub">There is not enough history loaded to look for a pattern by
+      month of the year.</p>`;
+  } else {
+    h += `<p class="opt-sub" style="max-width:var(--measure)">${s.any_meaningful
+      ? `Yes. ${plural(s.meaningful_months, "month")} of the twelve stand out from the
+         noise in this series, over ${plural(s.years_covered, "year")} of history.`
+      : `Not provably. The months below do differ from one another, but not by more than
+         this series throws up by chance, so this system will not tell you to buy in a
+         particular month on the strength of it.`}</p>
+      <ol class="plain">
+        <li><span class="fig" style="font-size:19px;color:var(--starboard)">${escapeHTML(s.cheapest_month.month_name)}</span>
+          <p class="dayline">has been the cheapest month on average, running
+            ${(Math.abs(s.cheapest_month.mean_deviation) * 100).toFixed(1)} percent below the
+            surrounding year, measured across ${plural(s.cheapest_month.years_observed, "year")}.
+            ${s.cheapest_month.meaningful
+              ? "This one is larger than chance explains."
+              : "This is inside what chance explains, so do not plan on it."}</p></li>
+        <li><span class="fig" style="font-size:19px;color:var(--buoy)">${escapeHTML(s.dearest_month.month_name)}</span>
+          <p class="dayline">has been the dearest, running
+            ${(s.dearest_month.mean_deviation * 100).toFixed(1)} percent above the surrounding
+            year. ${s.dearest_month.meaningful
+              ? "This one is larger than chance explains."
+              : "This is inside what chance explains, so do not plan on it."}</p></li>
+      </ol>
+      <p class="assume"><b>How this was tested.</b> ${escapeHTML(s.test)} If the real
+        calendar produces a bigger month effect than nearly all of those rotations, the
+        pattern is in the calendar. Here it beat
+        ${((1 - s.p_value) * 100).toFixed(0)} percent of them, which
+        ${s.p_value < 0.05 ? "is enough to call it real" : "is not enough to call it real"}.
+        A chart of monthly averages would have shown a confident looking wave either way,
+        which is exactly why it is tested rather than drawn and admired.</p>`;
+  }
+  h += `</div>`;
+  return h;
 }
 
 /* Rate history and forecast.
@@ -745,7 +1532,7 @@ async function drawChart() {
 
     $("chart").innerHTML = `
       <svg class="chart" viewBox="0 0 ${W} ${H}" role="img" id="ratesvg"
-        aria-label="${escapeHTML(k)} rate history over two years, with a ${f.horizon_days} day forecast cone. The caption below states every value.">
+        aria-label="A line chart of what it has cost to hire ${escapeHTML(indexName(k))} over the past two years, with a fan showing where the price may go over the next ${f.horizon_days} days. Every number in the drawing is written out in the caption below it, so nothing here is lost by not seeing it.">
         ${grid}
         <path d="${cone}" fill="${band}" opacity=".22"/>
         <path d="${cone}" fill="none" stroke="${band}" stroke-width="1" opacity=".55"/>
@@ -755,7 +1542,7 @@ async function drawChart() {
         <line x1="${x0}" y1="${Y(f.current)}" x2="${x1}" y2="${Y(f.point)}"
           stroke="${bandInk}" stroke-width="2" stroke-dasharray="6,4"/>
         <circle cx="${x0}" cy="${Y(f.current)}" r="4" fill="#6FC6E8" stroke="#06111A" stroke-width="2"/>
-        <text x="${x1}" y="${T - 4}" fill="#7FB2C8" font-size="12" text-anchor="end">forecast, next ${f.horizon_days} days</text>
+        <text x="${x1}" y="${T - 4}" fill="#7FB2C8" font-size="12" text-anchor="end">where it may go, next ${f.horizon_days} days</text>
         <text x="${L}" y="${H - 10}" fill="#55798C" font-size="12"
           font-family="IBM Plex Mono, monospace">${pts[0].date}</text>
         <text x="${x0}" y="${H - 10}" fill="#55798C" font-size="12" text-anchor="end"
@@ -768,13 +1555,17 @@ async function drawChart() {
           fill="transparent" style="cursor:crosshair"/>
       </svg>
       <div id="tip" class="tip" hidden></div>
-      <figcaption>${escapeHTML(k)} stands at <b>${f.current}</b> today. In
-        ${f.horizon_days} days the model puts it at <b>${f.point}</b>, and is eighty
-        percent confident it lands between <b>${f.lower}</b> and <b>${f.upper}</b>.
+      <figcaption>The published price for hiring ${escapeHTML(indexName(k))} stands at
+        <b>${f.current}</b> today. Looking ${f.horizon_days} days ahead, our model puts it at
+        <b>${f.point}</b>, and expects it to land somewhere between <b>${f.lower}</b> and
+        <b>${f.upper}</b> in about eight cases out of ten. The shaded fan on the right of the
+        drawing is that range.
         ${f.note
-          ? `<span style="color:${bandInk}">${escapeHTML(f.note)}</span>`
-          : `Skill score ${f.skill_score > 0 ? "+" : ""}${f.skill_score}, so the cone is
-             drawn in the colour this system reserves for a figure you can lean on.`}</figcaption>`;
+          ? `<span style="color:${bandInk}">${escapeHTML(f.note)} The fan is drawn in magenta,
+             which is the colour this system uses for anything you should not lean on.</span>`
+          : `The skill score here is ${f.skill_score > 0 ? "+" : ""}${f.skill_score}, which is
+             above zero, so this forecast beat the lazy guess of assuming no change. The fan is
+             drawn in green, the colour reserved for a figure you can lean on.`}</figcaption>`;
 
     // Hover layer. A line chart on a screen should answer "what was it on that day",
     // and reading a value off a grid line is guesswork.
@@ -796,14 +1587,332 @@ async function drawChart() {
       tip.style.left = Math.min(box.width - 130, Math.max(0, leftPx - 60)) + "px";
       tip.style.top = (py / H * box.height - 52) + "px";
     };
+    glossifyElement($("chart").querySelector("figcaption"));
     hit.addEventListener("pointermove", move);
     hit.addEventListener("pointerleave", () => {
       grp.style.display = "none"; tip.hidden = true;
     });
   } catch (e) {
-    $("chart").innerHTML = `<div class="errbox">The chart could not be drawn.
+    $("chart").innerHTML = `<div class="errbox">The price chart could not be drawn.
       ${escapeHTML(e.message)}</div>`;
   }
+}
+
+/* ======================================================================
+   THE BUYING PROGRAMME. Spot voyage by voyage, against one term contract.
+
+   This is the screen the problem statement's objective actually asks for, so it
+   gets the most careful writing. Three plans are shown as three list items rather
+   than as a table, because a table of numbers is unreadable through a screen
+   reader and this one is only three rows wide anyway. Each plan states what it
+   costs on average AND the range it could land in, because the entire point of a
+   term contract is that it trades the first against the second. */
+
+const pct = n => `${Number(n).toFixed(1)}%`;
+const pct0 = n => `${Math.round(Number(n))} percent`;
+/* A ratio like 1.0774 means seven and three quarter percent above today. Said that
+   way round, because nobody negotiates in ratios. */
+const asPercentOfToday = r => {
+  const d = (Number(r) - 1) * 100;
+  if (Math.abs(d) < 0.05) return "exactly today's rate";
+  return `${Math.abs(d).toFixed(1)} percent ${d > 0 ? "above" : "below"} today's rate`;
+};
+
+async function runProgramme() {
+  const btn = $("pgbtn"), out = $("pgout");
+  const term = $("pg_term").value.trim();
+  btn.disabled = true;
+  btn.textContent = "Working it out…";
+  out.setAttribute("aria-busy", "true");
+  out.innerHTML = `<div class="empty" role="status">Pricing your programme three ways
+    against every period of this length in the price history.</div>`;
+  try {
+    const d = await getJSON(API + "/ml/programme", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        cargo_type: $("pg_cargo").value,
+        origin: $("pg_origin").value,
+        destination_plant: $("pg_plant").value || null,
+        quantity_tonnes: Number($("pg_qty").value),
+        programme_tonnes: Number($("pg_qty").value),
+        programme_days: Number($("pg_days").value),
+        term_rate_ratio: term ? Number(term) / 100 : null,
+        horizon_days: 30
+      })
+    });
+    renderProgramme(d);
+  } catch (e) {
+    out.innerHTML = `<div class="errbox"><b>The programme could not be planned.</b>
+      ${escapeHTML(e.message)}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Compare spot against a term contract";
+    out.setAttribute("aria-busy", "false");
+  }
+}
+
+function renderProgramme(d) {
+  const out = $("pgout");
+  if (!d.feasible) {
+    out.innerHTML = `<div class="errbox"><b>There is no programme to plan here.</b>
+      ${escapeHTML(d.reason)}</div>`;
+    glossifyElement(out);
+    return;
+  }
+  const s = d.shape, m = d.market;
+  const chosen = d.plans.find(p => p.plan === d.chosen_plan) || d.plans[1];
+
+  let h = `<section class="verdict fix_now" aria-label="Programme recommendation">
+    <div class="verdict-top">
+      <div>
+        <p class="kicker">What we advise you to do</p>
+        <h3>${escapeHTML(d.headline)}</h3>
+        <p class="what">${escapeHTML(d.plain)}</p>
+      </div>
+      <p class="headline-price">
+        <span class="amt">${money(chosen.expected_cost_usd_per_tonne)}</span>
+        <span class="unit">expected cost of a tonne under that plan</span>
+        <span class="inr">${money(chosen.worst_case_usd_per_tonne)} in the bad case</span>
+      </p>
+    </div>
+    <ul class="drivers" aria-label="The shape of this programme">
+      <li class="chip">${tonnes(s.total_tonnes)} tonnes over ${s.period_days} days</li>
+      <li class="chip">${plural(s.voyages, "shipload")} of ${tonnes(s.tonnes_per_voyage)} tonnes</li>
+      <li class="chip">One ship to fix every ${s.days_between_fixtures} days</li>
+      <li class="chip">${escapeHTML(s.vessel_class)} into ${escapeHTML(s.discharge_port)}</li>
+    </ul></section>`;
+
+  h += `<h2>The three ways of buying this, priced against the same history</h2>
+    <p class="lead">Every figure below is for one tonne landed at the plant gate. The
+    expected cost is what you would pay if the market behaves as it usually has. The range
+    is how far the final bill could reasonably land either side of that. A term contract
+    does not make freight free. It trades a slightly different average for a much narrower
+    range, and whether that trade is worth making is the whole question.</p>
+    <ol class="plans">`;
+
+  d.plans.forEach(p => {
+    const isBest = p.plan === d.chosen_plan;
+    h += `<li class="plan ${isBest ? "best" : ""}">
+      <div class="plan-h">
+        <h3>${isBest ? '<span class="rank">Recommended</span>' : ""}${escapeHTML(p.label)}</h3>
+        <p class="price">
+          <span class="amt">${money(p.expected_cost_usd_per_tonne)}</span>
+          <span class="unit">expected, for each tonne</span>
+        </p>
+      </div>
+      <ul class="meta">
+        <li>Committed in advance <b>${pct(p.covered_percent)}</b></li>
+        <li>Bought on the day <b>${pct(100 - p.covered_percent)}</b></li>
+        <li>If the market is kind <b>${money(p.best_case_usd_per_tonne)}</b></li>
+        <li>If it is unkind <b>${money(p.worst_case_usd_per_tonne)}</b></li>
+        <li>So the bill could swing by <b>${money(p.range_usd_per_tonne)}</b> a tonne</li>
+      </ul>
+      <p class="dayline">Across the whole ${tonnes(s.total_tonnes)} tonnes that is about
+        <b class="fig" style="color:var(--chartwhite)">${inrCompact(p.expected_programme_cost_usd)}</b>
+        expected, and up to
+        <b class="fig" style="color:var(--chartwhite)">${inrCompact(p.worst_case_programme_cost_usd)}</b>
+        if the market goes against you.</p>
+    </li>`;
+  });
+  h += `</ol>`;
+
+  h += `<h2>What the term rate has to beat</h2>
+    <div class="card">
+      <p class="lead" style="margin-top:0">This is measured, not forecast. Over
+      <b>${tonnes(m.observations)}</b> separate ${m.period_days} day periods in the price
+      history of ${escapeHTML(indexName(m.index_key))}, here is what the spot market
+      actually did compared with the rate you could have fixed on day one.</p>
+      <ol class="plain">
+        <li><span class="fig" style="font-size:19px;color:var(--chartwhite)">${asPercentOfToday(m.expected_ratio)}</span>
+          <p class="dayline">is where the spot market typically settled over a period this
+          long. This is the middle of what happened, not a prediction of what will.</p></li>
+        <li><span class="fig" style="font-size:19px;color:var(--chartwhite)">${asPercentOfToday(m.p10_ratio)} to ${asPercentOfToday(m.p90_ratio)}</span>
+          <p class="dayline">covers eight of every ten of those periods. The remaining two
+          fell outside it, one on each side.</p></li>
+        <li><span class="fig" style="font-size:19px;color:var(--chartwhite)">${pct(m.share_above_one * 100)}</span>
+          <p class="dayline">of those periods ended up dearer than the rate available on day
+          one, so fixing on day one would have been the cheaper choice that often.</p></li>
+        <li><span class="fig" style="font-size:19px;color:var(--starboard)">$${Number(m.break_even_tce_usd_per_day).toLocaleString("en-US")} a day</span>
+          <p class="dayline">is the break even hire rate. A term contract at or below this
+          is cheaper than the spot market on average as well as steadier, so this is the
+          number to take into the negotiation. Today's spot rate is
+          $${Number(m.current_tce_usd_per_day).toLocaleString("en-US")} a day.</p></li>
+        <li><span class="fig" style="font-size:19px;color:var(--chartwhite)">${asPercentOfToday(m.term_ratio_used)}</span>
+          <p class="dayline">is the term rate this comparison used, which is
+          $${Number(m.term_tce_usd_per_day).toLocaleString("en-US")} a day.
+          ${m.term_rate_was_quoted
+            ? "You entered it, so the answer above is about the offer actually on your table."
+            : "Nobody has quoted you a rate, so the comparison assumed an owner would offer today's rate. Enter a real quote on the left to price the real offer."}
+          ${m.premium_ratio > 0
+            ? `That is ${money(m.premium_usd_per_tonne)} a tonne more than the spot market is expected to cost.`
+            : `That is ${money(-m.premium_usd_per_tonne)} a tonne less than the spot market is expected to cost.`}</p></li>
+      </ol>
+      <p class="assume">How far the recommendation leans on your own risk appetite. The
+        figure <b>${m.risk_aversion_lambda}</b> in cost_assumptions.json says how much cost
+        certainty is worth to this organisation. At that setting you would stop covering the
+        programme altogether once an owner asked more than
+        <b>${money(m.walk_away_premium_usd_per_tonne)}</b> a tonne above where spot is
+        expected to sit, and coverage falls steadily as the asking price climbs towards
+        that. Change that one number and this whole screen changes with it, which is why it
+        is written down in a file rather than buried in the code.</p>
+    </div>`;
+
+  h += `<h2>Where this leaves the money</h2>
+    <div class="card">
+      <ul class="meta" style="gap:14px 34px">
+        <li>Of the ${money(s.landed_cost_usd_per_tonne)} a tonne, the part that moves with
+          the charter market is <b>${money(s.market_exposed_usd_per_tonne)}</b></li>
+        <li>The part a contract cannot protect is <b>${money(s.fixed_usd_per_tonne)}</b></li>
+        <li>So a term contract can only ever act on <b>${pct(s.market_exposed_share * 100)}</b>
+          of the bill</li>
+      </ul>
+      <p class="dayline">Port charges, unloading at sea and the road or rail leg to the plant
+      do not change when the charter market moves, so no contract on a ship can protect them.
+      Saying otherwise would make this screen look better and be wrong.</p>
+    </div>`;
+  out.innerHTML = h;
+  glossifyElement(out);
+}
+
+/* A programme total runs into millions of dollars, and a fifteen digit number read
+   aloud is unusable. These are rounded to the nearest sensible unit and said in
+   words instead. */
+function inrCompact(usd) {
+  const n = Number(usd);
+  if (Math.abs(n) >= 1e6) return `$${(n / 1e6).toFixed(2)} million`;
+  if (Math.abs(n) >= 1e3) return `$${Math.round(n / 1e3)} thousand`;
+  return money(n);
+}
+
+/* ======================================================================
+   COMPARING THE SUPPLY COUNTRIES. */
+
+async function runCompare() {
+  const btn = $("cmpbtn"), out = $("cmpout");
+  btn.disabled = true;
+  btn.textContent = "Pricing every country…";
+  out.innerHTML = `<div class="empty" role="status">Running the full calculation once for
+    every country that supplies this material.</div>`;
+  try {
+    const d = await getJSON(API + "/ml/compare-origins", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        cargo_type: $("cargo").value,
+        origin: $("origin").value,
+        quantity_tonnes: Number($("qty").value),
+        destination_plant: $("plant").value || null,
+        horizon_days: Number($("hz").value)
+      })
+    });
+    renderCompare(d);
+  } catch (e) {
+    out.innerHTML = `<div class="errbox"><b>The comparison could not be run.</b>
+      ${escapeHTML(e.message)}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Price this material from every country";
+  }
+}
+
+function renderCompare(d) {
+  let h = `<div class="decl" style="margin:0 0 22px"><b>${escapeHTML(d.cargo_name)}, landed
+    at the plant gate.</b> ${escapeHTML(d.headline)}</div>`;
+
+  h += `<h2>Every country that can supply it, cheapest first</h2>
+    <p class="lead">${escapeHTML(d.note)}</p><ol class="plans">`;
+  d.origins.forEach(r => {
+    h += `<li class="plan ${r.rank === 1 ? "best" : ""}">
+      <div class="plan-h">
+        <h3>${r.rank === 1 ? '<span class="rank">Cheapest</span>' : ""}${escapeHTML(r.origin)}</h3>
+        <p class="price">
+          <span class="amt">${money(r.landed_cost_usd_per_tonne)}</span>
+          <span class="unit">for each tonne, delivered</span>
+          <span class="unit">${r.rank === 1 ? "the one to beat"
+            : "+" + money(r.extra_vs_cheapest_usd_per_tonne) + " a tonne more"}</span>
+        </p>
+      </div>
+      <ul class="meta">
+        <li>Best ship <b>${escapeHTML(r.vessel_class)}</b></li>
+        <li>Unloading at <b>${escapeHTML(r.discharge_port)}</b></li>
+        <li>Distance <b>${tonnes(r.distance_nm)} nautical miles</b></li>
+        <li>Ship fills to <b>${r.load_percentage}%</b></li>
+        <li>Whole trip <b>${r.total_days} days</b></li>
+      </ul>
+      <p class="dayline">The loading port there takes ships drawing up to
+        <b>${r.load_port_max_draft_m} metres</b> and loads about
+        <b>${tonnes(r.load_rate_tpd)} tonnes a day</b>. That draft is what decides how full
+        the ship can leave, and how full it leaves is what decides the cost of a tonne.</p>
+    </li>`;
+  });
+  h += `</ol>`;
+
+  if (d.unavailable && d.unavailable.length) {
+    h += `<h2>Countries that cannot supply this at all</h2><ol class="plain">`;
+    d.unavailable.forEach(u => {
+      h += `<li><b style="font-size:17px">${escapeHTML(u.origin)}</b>
+        <p class="dayline">${escapeHTML(u.reason)}</p></li>`;
+    });
+    h += `</ol>`;
+  }
+  $("cmpout").innerHTML = h;
+  glossifyElement($("cmpout"));
+}
+
+/* ======================================================================
+   RISKS AND EARLY WARNINGS. */
+
+const SEVERITY_WORD = {
+  high: "Could change the decision",
+  medium: "Read before committing",
+  low: "Worth knowing"
+};
+
+async function loadRisk(force) {
+  const out = $("riskout"), btn = $("riskbtn");
+  RISK_LOADED = true;
+  btn.disabled = true;
+  if (force) btn.textContent = "Checking…";
+  try {
+    const q = new URLSearchParams({ horizon_days: $("hz").value || "30" });
+    if ($("origin").value) q.set("origin", $("origin").value);
+    if ($("cargo").value) q.set("cargo_type", $("cargo").value);
+    const d = await getJSON(`${API}/ml/risk?${q.toString()}`);
+    renderRisk(d);
+  } catch (e) {
+    out.innerHTML = `<div class="errbox"><b>The warnings could not be loaded.</b>
+      ${escapeHTML(e.message)}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Check everything again now";
+  }
+}
+
+function renderRisk(d) {
+  let h = `<div class="${d.counts.high ? "warnbox" : "decl"}" style="margin:0 0 22px">
+    <b>${escapeHTML(d.headline)}</b></div>`;
+  if (!d.warnings.length) {
+    h += `<div class="empty">Nothing is flagged. That is a statement about the five things
+      this screen watches, and not a promise that nothing can go wrong.</div>`;
+  } else {
+    h += `<ol class="plans">`;
+    d.warnings.forEach(w => {
+      h += `<li class="plan warn-${escapeHTML(w.severity)}">
+        <div class="plan-h">
+          <h3>${escapeHTML(w.title)}</h3>
+          <p class="price"><span class="sev sev-${escapeHTML(w.severity)}">${escapeHTML(SEVERITY_WORD[w.severity] || w.severity)}</span></p>
+        </div>
+        <p class="opt-sub">${escapeHTML(w.detail)}</p>
+        <p class="dayline"><b style="color:var(--chartwhite)">What you can do.</b>
+          ${escapeHTML(w.action)}</p>
+        <p class="cite">How we know. ${escapeHTML(w.evidence)}</p>
+      </li>`;
+    });
+    h += `</ol>`;
+  }
+  $("riskout").innerHTML = h;
+  glossifyElement($("riskout"));
 }
 
 function renderPorts() {
@@ -813,16 +1922,19 @@ function renderPorts() {
     return `<article class="pcard">
       <h3>${escapeHTML(p.name)}</h3>
       <div class="sub" style="margin-bottom:10px">${escapeHTML(p.state)} &middot; ${escapeHTML(p.code)}</div>
-      <div class="prow"><span>Max draft</span><b>${p.max_draft_m} m</b></div>
-      <div class="prow"><span>Max length overall</span><b>${p.max_loa_m} m</b></div>
-      <div class="prow"><span>Max beam</span><b>${p.max_beam_m} m</b></div>
-      <div class="prow"><span>Max deadweight</span><b>${tonnes(p.max_dwt)}</b></div>
-      <div class="prow"><span>Lightering</span><b>${p.lightering_available ? "yes" : "no"}</b></div>
-      <div class="prow"><span>Typical wait</span><b>${p.typical_wait_days} days</b></div>
-      <p class="cite">Draft source: ${escapeHTML(c.max_draft_m || "none recorded")}</p>
-      ${assumed ? `<p class="assume">${assumed} field${assumed === 1 ? "" : "s"} still unverified assumptions</p>` : ""}
+      <div class="prow"><span>Deepest ship it can take, its draft</span><b>${p.max_draft_m} m</b></div>
+      <div class="prow"><span>Longest ship it can take</span><b>${p.max_loa_m} m</b></div>
+      <div class="prow"><span>Widest ship it can take, its beam</span><b>${p.max_beam_m} m</b></div>
+      <div class="prow"><span>Biggest ship it can take, by deadweight</span><b>${tonnes(p.max_dwt)} t</b></div>
+      <div class="prow"><span>Can unload at sea into smaller boats</span><b>${p.lightering_available ? "yes" : "no"}</b></div>
+      <div class="prow"><span>How long a ship usually waits to get in</span><b>${p.typical_wait_days} days</b></div>
+      <p class="cite">Where the depth figure came from. ${escapeHTML(c.max_draft_m || "Nothing recorded")}</p>
+      ${assumed ? `<p class="assume">${assumed} of the numbers on this card
+        ${assumed === 1 ? "is a placeholder we chose ourselves and has" : "are placeholders we chose ourselves and have"}
+        not been confirmed with the port.</p>` : ""}
     </article>`;
   }).join("");
+  glossifyElement($("ports"));
 }
 
 boot();

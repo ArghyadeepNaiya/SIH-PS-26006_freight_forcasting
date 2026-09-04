@@ -20,13 +20,16 @@ def decide(best_option, forecast, skill_score, horizon_days, split_option=None, 
             "action": "fix_now",
             "headline": "Fix now.",
             "reason": (
-                f"Our forecast shows no reliable skill at {horizon_days} days "
-                f"(skill score {0.0 if skill_score is None else round(skill_score, 3)}). "
-                "With no demonstrated edge over simply assuming today's rate holds, "
-                "waiting is a gamble, not a strategy."
+                f"Our price forecast for the next {horizon_days} days is not reliable. Its "
+                f"skill score is "
+                f"{0.0 if skill_score is None else round(skill_score, 3)}, and anything at or "
+                "below zero means the forecast is no better than simply assuming today's "
+                "price holds. With nothing solid to wait for, waiting would be a gamble "
+                "rather than a plan, so book the ship now."
             ),
-            "confidence_label": "High confidence in the recommendation, low confidence in the forecast",
-            "drivers": ["No forecast skill at this horizon"],
+            "confidence_label": ("We are confident in this advice, and not at all confident "
+                                 "in the forecast it is based on"),
+            "drivers": ["The forecast is not reliable this far ahead"],
             "expected_saving_usd_per_tonne": 0.0,
         }
 
@@ -47,34 +50,40 @@ def decide(best_option, forecast, skill_score, horizon_days, split_option=None, 
     if expected_saving > downside_risk * a["wait_risk_premium"] and expected_saving > 0.5:
         action, headline = "wait", "Wait."
         reason = (
-            f"The {horizon_days}-day forecast implies roughly "
-            f"${expected_saving:.2f}/t of saving against a downside risk of "
-            f"${downside_risk:.2f}/t. The model beats a no-change assumption at this "
-            f"horizon (skill score {skill_score:.3f})."
+            f"Looking {horizon_days} days ahead, the forecast suggests you would save about "
+            f"${expected_saving:.2f} on every tonne, against a risk of losing "
+            f"${downside_risk:.2f} a tonne if prices move the other way. The model does beat "
+            f"the lazy guess of assuming no change over this period, with a skill score of "
+            f"{skill_score:.3f}, so the forecast is worth acting on."
         )
-        drivers.append(f"Forecast rates falling for {best_option['vessel_class']}")
+        drivers.append(f"Hire prices for a {best_option['vessel_class']} are forecast to fall")
     else:
         action, headline = "fix_now", "Fix now."
         reason = (
-            f"Expected saving from waiting is only ${expected_saving:.2f}/t against "
-            f"${downside_risk:.2f}/t of downside. Not worth the exposure."
+            f"Waiting would save only about ${expected_saving:.2f} a tonne, while risking "
+            f"${downside_risk:.2f} a tonne if prices go the other way. That is not worth the "
+            f"exposure, so book now."
         )
-        drivers.append("Downside risk exceeds expected saving")
+        drivers.append("The risk of waiting is larger than the likely saving")
 
     if split_option and split_option["landed_cost_usd_per_tonne"] < today * (1 - a["split_advantage_threshold"]):
         action, headline = "split", "Split the cargo."
         reason = (
-            f"Two smaller parcels land at ${split_option['landed_cost_usd_per_tonne']:.2f}/t "
-            f"versus ${today:.2f}/t for the best single vessel, because the smaller class "
-            f"can load closer to full at this port."
+            f"Bringing the material in as two smaller shiploads costs "
+            f"${split_option['landed_cost_usd_per_tonne']:.2f} a tonne, against "
+            f"${today:.2f} a tonne for the best single ship, because the smaller ship can be "
+            f"loaded much closer to full at this port."
         )
-        drivers.insert(0, "Draft limit penalises the larger vessel")
+        drivers.insert(0, "The port is too shallow to fill the larger ship")
 
     if best_option.get("requires_lightering"):
-        drivers.append(f"{best_option['discharge_port']} requires lightering at anchorage")
+        drivers.append(
+            f"{best_option['discharge_port']} needs part of the load taken off at sea first"
+        )
     if best_option.get("load_percentage", 100) < 85:
         drivers.append(
-            f"Draft limits loading to {best_option['load_percentage']}% of capacity"
+            f"Shallow water means the ship can only be filled to "
+            f"{best_option['load_percentage']} percent"
         )
 
     return {

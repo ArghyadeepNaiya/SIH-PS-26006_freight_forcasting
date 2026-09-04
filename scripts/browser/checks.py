@@ -154,7 +154,7 @@ check("a rejection caused by the operator declaration is shown",
       "operator declaration" in out.lower() or "OPERATOR DECLARED" in out)
 
 # --- the fourth screen, reached by its real tab button ---
-m.click('nav button[data-page="3"]')
+m.click('nav button[data-page="p3"]')
 m.wait_for("document.getElementById('portlive').textContent.length > 400",
            seconds=30, label="the port capacity and weather screen")
 # Rendered markup wraps across lines, and a screen reader collapses that whitespace

@@ -63,20 +63,20 @@ def _arrival_window(req):
     if start is None and end is None:
         start = date.today()
         end = start + timedelta(days=horizon)
-        note = (f"No arrival window was given, so operator availability was checked "
-                f"against today through the {horizon} day decision horizon, "
-                f"{start.isoformat()} to {end.isoformat()}.")
+        note = (f"You did not say when the cargo has to arrive, so port availability was "
+                f"checked from today, {start.isoformat()}, up to {end.isoformat()}, which is "
+                f"the {horizon} days ahead you chose to decide over.")
     elif start is None:
         start = date.today()
-        note = (f"Arrival window checked from today, {start.isoformat()}, to the "
-                f"latest arrival you gave, {end.isoformat()}.")
+        note = (f"Port availability was checked from today, {start.isoformat()}, up to the "
+                f"latest arrival date you gave, {end.isoformat()}.")
     elif end is None:
         end = start + timedelta(days=horizon)
-        note = (f"Only an earliest arrival was given, so availability was checked "
-                f"from {start.isoformat()} across the {horizon} day horizon to "
-                f"{end.isoformat()}.")
+        note = (f"You gave an earliest arrival date but no latest one, so port availability "
+                f"was checked from {start.isoformat()} across the {horizon} days ahead you "
+                f"chose to decide over, up to {end.isoformat()}.")
     else:
-        note = (f"Operator availability was checked against your arrival window of "
+        note = (f"Port availability was checked against the arrival dates you gave, "
                 f"{start.isoformat()} to {end.isoformat()}.")
     return start, end, note
 
@@ -107,17 +107,17 @@ def _area_note(area, deliverable_tonnes):
         return None
     name = area.get("name") or "an unnamed area"
     cap = area.get("storage_capacity_tonnes")
-    bits = [f"operator offers {name}"]
+    bits = [f"The port is offering you {name}"]
     if area.get("area_sq_m"):
-        bits.append(f"{float(area['area_sq_m']):,.0f} square metres")
+        bits.append(f"it covers {float(area['area_sq_m']):,.0f} square metres")
     if cap:
         cap = float(cap)
         if cap < deliverable_tonnes:
-            bits.append(f"declared storage of {cap:,.0f} t is below the "
-                        f"{deliverable_tonnes:,.0f} t this ship discharges, so the "
-                        f"parcel must move out as it lands")
+            bits.append(f"it holds {cap:,.0f} tonnes, which is less than the "
+                        f"{deliverable_tonnes:,.0f} tonnes coming off this ship, so the "
+                        f"material has to be moved out to the plant as it lands")
         else:
-            bits.append(f"declared storage of {cap:,.0f} t holds the full parcel")
+            bits.append(f"it holds {cap:,.0f} tonnes, enough for the whole load at once")
     return ". ".join(bits)
 
 
@@ -130,6 +130,60 @@ def _tce_from_index(index_value, index_key):
     """
     mult = {"BCI": 9.1, "BPI": 9.0, "BSI": 12.6, "BHSI": 18.0}
     return index_value * mult.get(index_key, 10.0)
+
+
+def _idle_summary(options):
+    """Where the unproductive days are, and what moving the cargo would save.
+
+    Idle time on a voyage is waiting for a berth plus waiting out weather, and the
+    empty positioning leg is time on hire with no cargo aboard at all. The cost model
+    already prices all three. What was missing was anybody adding them up and saying
+    which port causes the fewest of them, which is the whole of the problem
+    statement's idle scenario requirement in one paragraph.
+    """
+    if not options:
+        return None
+    best = options[0]
+    b_idle = best.get("idle_and_empty_time") or {}
+
+    # The least idle option, which is not always the cheapest one. Where they differ
+    # the difference is worth stating, because idle days are the part of a voyage a
+    # buyer can actually plan away.
+    leanest = min(options, key=lambda o: (o.get("idle_and_empty_time") or {}).get("idle_days", 99))
+    l_idle = leanest.get("idle_and_empty_time") or {}
+    saving = round(b_idle.get("idle_cost_usd_per_tonne", 0)
+                   - l_idle.get("idle_cost_usd_per_tonne", 0), 2)
+    days_saved = round(b_idle.get("idle_days", 0) - l_idle.get("idle_days", 0), 1)
+
+    if leanest is best or days_saved <= 0:
+        alt = None
+        headline = (f"The recommended voyage spends {b_idle.get('idle_days', 0):g} days "
+                    f"waiting and {b_idle.get('ballast_days', 0):g} days sailing empty to "
+                    f"collect the cargo. No other workable option wastes less time than that.")
+    else:
+        alt = {
+            "vessel_class": leanest["vessel_class"],
+            "discharge_port": leanest["discharge_port"],
+            "idle_days": l_idle.get("idle_days"),
+            "landed_cost_usd_per_tonne": leanest["landed_cost_usd_per_tonne"],
+            "extra_cost_usd_per_tonne": round(
+                leanest["landed_cost_usd_per_tonne"] - best["landed_cost_usd_per_tonne"], 2),
+            "idle_days_saved": days_saved,
+            "idle_saving_usd_per_tonne": saving,
+        }
+        headline = (f"The recommended voyage spends {b_idle.get('idle_days', 0):g} days "
+                    f"waiting. A {leanest['vessel_class']} into "
+                    f"{leanest['discharge_port']} would wait {days_saved:g} days less.")
+
+    return {
+        "headline": headline,
+        "recommended": b_idle,
+        "least_idle_alternative": alt,
+        "note": ("Waiting days and weather days are already charged into every landed cost "
+                 "on this page at the daily hire rate. They are pulled out here because they "
+                 "are the part of a voyage that planning can remove, whereas the sailing "
+                 "distance is not."),
+    }
 
 
 def _reject_draft(c, capd):
@@ -262,20 +316,28 @@ def run(req, df):
             # --- Step 7 (partial): explanation ---
             note = []
             if capd["requires_lightering"]:
-                note.append(f"lighters {capd['lightered_tonnes']:,} t at anchorage")
+                note.append(f"{capd['lightered_tonnes']:,} tonnes have to be taken off at sea "
+                            f"into smaller boats before this ship can come in")
             if capd["cubes_out"]:
                 note.append(
-                    f"cargo cubes out at {capd['load_percentage']}% of deadweight, "
-                    f"stowage factor {capd['stowage_factor_m3_per_t']} m3/t")
+                    f"the holds fill up at {capd['load_percentage']} percent of what this ship "
+                    f"could carry by weight, because one tonne of this material takes up "
+                    f"{capd['stowage_factor_m3_per_t']} cubic metres")
             elif capd["load_percentage"] < 90:
                 note.append(
-                    f"draft limits loading to {capd['load_percentage']}% of capacity")
+                    f"shallow water means it can only be filled to "
+                    f"{capd['load_percentage']} percent")
             if capd["voyages_needed"] and capd["voyages_needed"] > 1:
-                note.append(f"{capd['voyages_needed']} voyages needed")
+                note.append(f"it would take {capd['voyages_needed']} separate trips to move "
+                            f"the whole quantity")
             if weather_delay > 0:
-                note.append(f"{weather_delay:g} forecast weather delay day"
-                            f"{'' if weather_delay == 1 else 's'}")
-            reason = ". ".join(note) if note else "loads full, no restriction"
+                note.append(f"{weather_delay:g} day"
+                            f"{' is' if weather_delay == 1 else 's are'} expected to be lost "
+                            f"to weather")
+            # Each clause is a sentence in its own right, so each one starts with a
+            # capital letter. Joined without this they read as one broken sentence.
+            reason = ". ".join(n[0].upper() + n[1:] for n in note) if note else \
+                "It loads completely full, with nothing holding it back"
 
             # Skip the lightered variant when lightering changes nothing.
             if allow_light and suffix and not capd["requires_lightering"]:
@@ -330,6 +392,8 @@ def run(req, df):
     options.sort(key=lambda o: (o["landed_cost_usd_per_tonne"],
                                 int(o["demand_rank"] or 99)))
 
+    idle = _idle_summary(options)
+
     port_intel = _port_intelligence(cargo, options, weather_by_port,
                                     demand_by_port, port_codes)
 
@@ -337,10 +401,11 @@ def run(req, df):
         return {
             "recommendation": {
                 "action": "fix_now",
-                "headline": "No feasible option.",
-                "reason": ("No vessel class can serve this cargo at any East Coast "
-                           "port under current constraints."),
-                "confidence_label": "n/a",
+                "headline": "There is no workable answer.",
+                "reason": ("No size of ship can carry this material into any east coast port "
+                           "under the limits those ports have. Every combination that was "
+                           "tried is listed below with the reason it was refused."),
+                "confidence_label": "Not applicable, because there is nothing to recommend",
                 "drivers": [],
                 "expected_saving_usd_per_tonne": 0.0,
             },
@@ -352,6 +417,7 @@ def run(req, df):
             "arrival_window": {"start": window_start.isoformat(),
                                "end": window_end.isoformat(), "note": window_note},
             "port_intelligence": port_intel,
+            "idle_summary": None,
             "generated_at": str(date.today()),
         }
 
@@ -373,12 +439,12 @@ def run(req, df):
     # changed something about the best option.
     if best.get("weather_delay_days"):
         rec["drivers"].append(
-            f"{best['weather_delay_days']:g} weather delay day"
-            f"{'' if best['weather_delay_days'] == 1 else 's'} forecast at "
-            f"{best['discharge_port']}")
+            f"{best['weather_delay_days']:g} day"
+            f"{'' if best['weather_delay_days'] == 1 else 's'} expected to be lost to weather "
+            f"at {best['discharge_port']}")
     if best.get("demand_rank") == 1:
         rec["drivers"].append(
-            f"{best['discharge_port']} operator ranks this cargo their top demand")
+            f"{best['discharge_port']} says this is the material it most wants")
     rec["drivers"] = rec["drivers"][:4]
 
     # --- Step 8: response ---
@@ -392,6 +458,7 @@ def run(req, df):
         "arrival_window": {"start": window_start.isoformat(),
                            "end": window_end.isoformat(), "note": window_note},
         "port_intelligence": port_intel,
+        "idle_summary": idle,
         "generated_at": str(date.today()),
     }
 
@@ -445,12 +512,13 @@ def _port_intelligence(cargo, options, weather_by_port, demand_by_port, port_cod
 
     if declared:
         top = declared[0]
-        headline = (f"{top['port_name']} ranks {cargo_name} number "
-                    f"{top['demand_rank']} in its own demand list, declared by "
-                    f"{top['declared_by']} on {str(top['updated_at'])[:10]}.")
+        headline = (f"{top['port_name']} puts {cargo_name} at number "
+                    f"{top['demand_rank']} on its own list of what it most wants to receive. "
+                    f"That was stated by {top['declared_by']} on "
+                    f"{str(top['updated_at'])[:10]}.")
     else:
-        headline = (f"No port operator has declared demand for {cargo_name} yet. "
-                    f"Ranking below is by landed cost alone.")
+        headline = (f"No port has told us it wants {cargo_name} yet, so the ranking below is "
+                    f"based on cost alone.")
 
     return {"cargo_type": cargo, "cargo_name": cargo_name,
             "headline": headline, "ports": rows,

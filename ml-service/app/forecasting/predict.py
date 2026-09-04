@@ -43,7 +43,9 @@ def forecast(df, index_key, horizon_days):
         "model_mae": met["model_mae"],
         "baseline_mae": met["baseline_mae"],
         "note": None if met["has_skill"] else
-                "NO SKILL at this horizon. Model does not beat assuming no change.",
+                "This forecast failed its reliability test at this length of time. It is no "
+                "better than simply assuming today's price holds, so it should not be leaned "
+                "on.",
     }
 
 

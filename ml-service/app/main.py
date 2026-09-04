@@ -13,6 +13,10 @@ from app.forecasting.train import train_all, cache
 from app.forecasting import predict as fc
 from app.core import pipeline
 from app.core import weather
+from app.core import programme as prog
+from app.core import timing as tm
+from app.core import risk as rsk
+from app.core import compare as cmp_origins
 from app.api.portal import router as portal_router
 from app.config import PORTS, VESSELS, ORIGINS, ASSUMPTION_META, PLANTS, CARGOES
 
@@ -58,6 +62,22 @@ class RecommendRequest(BaseModel):
     overrides: Optional[Dict[str, float]] = None
 
 
+class ProgrammeRequest(RecommendRequest):
+    """A whole procurement programme rather than one shipment.
+
+    quantity_tonnes stays on the parent for compatibility and is used as the
+    programme total when programme_tonnes is not given, so an existing client that
+    only knows how to ask for one shipment still gets a sensible answer.
+    """
+    programme_tonnes: Optional[float] = Field(None, gt=0, examples=[600000])
+    programme_days: int = Field(180, ge=7, le=1095, examples=[180])
+    term_rate_ratio: Optional[float] = Field(
+        None, gt=0.2, lt=3.0,
+        description=("A term rate an owner has actually offered, as a fraction of today's "
+                     "spot level. 0.95 means five percent below today. Leave empty and the "
+                     "comparison uses the default in cost_assumptions.json and says so."))
+
+
 @app.on_event("startup")
 def startup():
     df, label, is_real = load_rates()
@@ -85,6 +105,48 @@ def recommend(req: RecommendRequest):
         return pipeline.run(req.model_dump(), STATE["df"])
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/ml/programme")
+def programme(req: ProgrammeRequest):
+    """Spot voyage by voyage against a term contract covering many voyages."""
+    try:
+        return prog.run(req.model_dump(), STATE["df"])
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/ml/compare-origins")
+def compare_origins(req: RecommendRequest):
+    """The same cargo priced from every country in the system that supplies it."""
+    try:
+        return cmp_origins.by_origin(req.model_dump(), STATE["df"])
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/ml/timing")
+def timing(index_key: str = "BCI"):
+    """Every horizon at once, plus seasonality and the volatility regime."""
+    if index_key not in STATE["df"].columns:
+        raise HTTPException(status_code=400, detail=f"Unknown index key: {index_key}")
+    return tm.scan(STATE["df"], index_key)
+
+
+@app.get("/ml/risk")
+def risk(horizon_days: int = 30, port_code: Optional[str] = None,
+         origin: Optional[str] = None, cargo_type: Optional[str] = None):
+    """Early warnings across the market, the forecast, the ports and the data."""
+    alternatives, origin_name, cargo_name = [], None, None
+    if origin and cargo_type:
+        origin_name = (ORIGINS.get(origin) or {}).get("name", origin)
+        cargo_name = (CARGOES.get(cargo_type) or {}).get("name", cargo_type)
+        alternatives = [o["name"] for o in ORIGINS.values()
+                        if cargo_type in o["cargo"] and o["code"] != origin]
+    return rsk.report(STATE["df"], STATE.get("is_real"), STATE.get("label"),
+                      horizon_days=horizon_days, port_code=port_code,
+                      origin_code=origin, origin_name=origin_name,
+                      cargo_name=cargo_name, alternatives=alternatives)
 
 
 @app.get("/ml/forecast")

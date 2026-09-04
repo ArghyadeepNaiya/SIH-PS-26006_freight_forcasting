@@ -102,7 +102,7 @@ m.get(BASE + "/")
 m.wait_for("document.getElementById('origin').options.length > 0")
 m.click("#runbtn")
 m.wait_for("document.querySelectorAll('#out article.opt').length > 0", seconds=45)
-m.click('nav button[data-page="3"]')
+m.click('nav button[data-page="p3"]')
 m.wait_for("document.getElementById('portlive').textContent.length > 400", seconds=30)
 audit("business dashboard, results and port screen rendered")
 

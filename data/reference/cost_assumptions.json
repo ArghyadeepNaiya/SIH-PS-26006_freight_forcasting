@@ -1,21 +1,146 @@
 {
   "_note": "EVERY value here is an assumption unless marked otherwise. All are user-editable at runtime. This file is the single place cost logic reads from - never hard-code a cost anywhere else.",
   "assumptions": {
-    "usd_to_inr": {"value": 88.0, "unit": "INR per USD", "source": "ASSUMPTION - update to current rate", "editable": true},
-    "bunker_price_usd_per_tonne": {"value": 560.0, "unit": "USD/t VLSFO", "source": "ASSUMPTION - update from bunker index", "editable": true},
-    "demurrage_usd_per_day_multiplier": {"value": 1.15, "unit": "x TCE", "source": "ASSUMPTION - demurrage typically set near vessel daily earnings", "editable": true},
-    "inland_cost_inr_per_tonne_per_km": {"value": 1.6, "unit": "INR/t/km", "source": "ASSUMPTION - replace with actual rail freight", "editable": true},
-    "port_dues_fixed_usd": {"value": 25000.0, "unit": "USD per call", "source": "ASSUMPTION", "editable": true},
-    "wait_risk_premium": {"value": 0.35, "unit": "fraction", "source": "DESIGN CHOICE - expected saving must exceed 35 pct of downside risk before we recommend waiting", "editable": true},
-    "min_skill_score_to_wait": {"value": 0.02, "unit": "skill score", "source": "DESIGN RULE - never recommend waiting on a forecast with no demonstrated skill", "editable": false},
-    "split_advantage_threshold": {"value": 0.03, "unit": "fraction", "source": "DESIGN CHOICE - split must beat best single option by 3 pct", "editable": true}
+    "usd_to_inr": {
+      "value": 88.0,
+      "unit": "INR per USD",
+      "source": "ASSUMPTION - update to current rate",
+      "editable": true
+    },
+    "bunker_price_usd_per_tonne": {
+      "value": 560.0,
+      "unit": "USD/t VLSFO",
+      "source": "ASSUMPTION - update from bunker index",
+      "editable": true
+    },
+    "demurrage_usd_per_day_multiplier": {
+      "value": 1.15,
+      "unit": "x TCE",
+      "source": "ASSUMPTION - demurrage typically set near vessel daily earnings",
+      "editable": true
+    },
+    "inland_cost_inr_per_tonne_per_km": {
+      "value": 1.6,
+      "unit": "INR/t/km",
+      "source": "ASSUMPTION - replace with actual rail freight",
+      "editable": true
+    },
+    "port_dues_fixed_usd": {
+      "value": 25000.0,
+      "unit": "USD per call",
+      "source": "ASSUMPTION",
+      "editable": true
+    },
+    "wait_risk_premium": {
+      "value": 0.35,
+      "unit": "fraction",
+      "source": "DESIGN CHOICE - expected saving must exceed 35 pct of downside risk before we recommend waiting",
+      "editable": true
+    },
+    "min_skill_score_to_wait": {
+      "value": 0.02,
+      "unit": "skill score",
+      "source": "DESIGN RULE - never recommend waiting on a forecast with no demonstrated skill",
+      "editable": false
+    },
+    "split_advantage_threshold": {
+      "value": 0.03,
+      "unit": "fraction",
+      "source": "DESIGN CHOICE - split must beat best single option by 3 pct",
+      "editable": true
+    },
+    "risk_aversion_lambda": {
+      "value": 3.0,
+      "unit": "dimensionless",
+      "source": "ASSUMPTION - procurement policy parameter, not a market observation. It sets how much cost certainty is worth to this buyer when deciding how much of a programme to cover on a term contract. 0 means indifferent to risk and the answer becomes all spot or all term. Higher values cover more. Agree this figure with the treasury function before use.",
+      "editable": true
+    },
+    "term_rate_ratio_default": {
+      "value": 1.0,
+      "unit": "fraction of today's spot level",
+      "source": "ASSUMPTION - with no term rate on the table, the comparison assumes an owner would offer a term contract at today's spot level. Replace with the rate you have actually been quoted.",
+      "editable": true
+    },
+    "high_volatility_percentile": {
+      "value": 0.75,
+      "unit": "percentile of this index's own history",
+      "source": "ASSUMPTION - the point above which realised volatility is called elevated in the warnings panel. Chosen as the upper quartile.",
+      "editable": true
+    },
+    "congestion_warning_extra_days": {
+      "value": 1.0,
+      "unit": "days",
+      "source": "ASSUMPTION - how much longer than the published typical wait a port's own declared waiting time has to be before the system raises a congestion warning.",
+      "editable": true
+    },
+    "ballast_allowance_fraction": {
+      "value": 0.55,
+      "unit": "fraction of laden sea days",
+      "source": "ASSUMPTION - the empty positioning leg is charged at 55 percent of laden sea time. This is the rough allowance the cost model has always used, moved here so it is visible and editable rather than buried in code. Replace with a lane specific ballast factor when one is available.",
+      "editable": true
+    }
   },
   "plants": [
-    {"name": "Rourkela", "nearest_ports": {"INPRT": 320, "INDAH": 340, "INHAL": 480, "INSAG": 500, "INGGV": 720, "INVTZ": 730, "INGPR": 520}},
-    {"name": "Bokaro",   "nearest_ports": {"INPRT": 480, "INDAH": 460, "INHAL": 380, "INSAG": 400, "INGGV": 900, "INVTZ": 910, "INGPR": 680}},
-    {"name": "Durgapur", "nearest_ports": {"INPRT": 520, "INDAH": 480, "INHAL": 180, "INSAG": 200, "INGGV": 950, "INVTZ": 960, "INGPR": 720}},
-    {"name": "Burnpur",  "nearest_ports": {"INPRT": 540, "INDAH": 500, "INHAL": 200, "INSAG": 220, "INGGV": 970, "INVTZ": 980, "INGPR": 740}},
-    {"name": "Bhilai",   "nearest_ports": {"INPRT": 700, "INDAH": 720, "INHAL": 880, "INSAG": 900, "INGGV": 780, "INVTZ": 790, "INGPR": 760}}
+    {
+      "name": "Rourkela",
+      "nearest_ports": {
+        "INPRT": 320,
+        "INDAH": 340,
+        "INHAL": 480,
+        "INSAG": 500,
+        "INGGV": 720,
+        "INVTZ": 730,
+        "INGPR": 520
+      }
+    },
+    {
+      "name": "Bokaro",
+      "nearest_ports": {
+        "INPRT": 480,
+        "INDAH": 460,
+        "INHAL": 380,
+        "INSAG": 400,
+        "INGGV": 900,
+        "INVTZ": 910,
+        "INGPR": 680
+      }
+    },
+    {
+      "name": "Durgapur",
+      "nearest_ports": {
+        "INPRT": 520,
+        "INDAH": 480,
+        "INHAL": 180,
+        "INSAG": 200,
+        "INGGV": 950,
+        "INVTZ": 960,
+        "INGPR": 720
+      }
+    },
+    {
+      "name": "Burnpur",
+      "nearest_ports": {
+        "INPRT": 540,
+        "INDAH": 500,
+        "INHAL": 200,
+        "INSAG": 220,
+        "INGGV": 970,
+        "INVTZ": 980,
+        "INGPR": 740
+      }
+    },
+    {
+      "name": "Bhilai",
+      "nearest_ports": {
+        "INPRT": 700,
+        "INDAH": 720,
+        "INHAL": 880,
+        "INSAG": 900,
+        "INGGV": 780,
+        "INVTZ": 790,
+        "INGPR": 760
+      }
+    }
   ],
   "_plants_note": "OPEN ITEM OI-01. Distances are ASSUMPTIONS. Verify plant-to-port assignments against SAIL annual report before showing to a Ministry of Steel evaluator."
 }
