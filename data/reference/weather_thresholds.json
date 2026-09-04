@@ -1,0 +1,49 @@
+{
+  "_note": "Operating limits that turn a weather forecast into a berthing and handling decision. RULE 2 of this project says no numeric reference value without a source citation. Every threshold below therefore carries one, and every threshold that is still an engineering estimate says so in capital letters. Replace these with the published operating limits of each terminal before the finale.",
+  "_provider": "Open-Meteo. Free, no API key, no registration. Forecast API for wind and rain, Marine API for significant wave height and swell.",
+
+  "thresholds": {
+    "wind_speed_ms_grab_crane_suspend": {
+      "value": 15.0,
+      "unit": "m/s",
+      "citation": "ASSUMPTION. 15 m/s is roughly the lower bound of Beaufort force 7, near gale. Bulk terminal grab and gantry operations are commonly suspended in this band. Verify against each terminal's published crane operating limit."
+    },
+    "wind_speed_ms_berthing_suspend": {
+      "value": 12.0,
+      "unit": "m/s",
+      "citation": "ASSUMPTION. Pilotage and tug assisted berthing of loaded bulk carriers is commonly restricted around Beaufort force 6. Verify with each port authority's pilotage notice."
+    },
+    "wave_height_m_lightering_suspend": {
+      "value": 2.0,
+      "unit": "m",
+      "citation": "ASSUMPTION. Ship to ship transfer and floating crane work at open anchorage is normally suspended above about 2 m significant wave height. This matters most at Sagar and Sandheads, which are anchorage transfers rather than alongside berths. Verify with the lightering operator."
+    },
+    "wave_height_m_berthing_caution": {
+      "value": 1.5,
+      "unit": "m",
+      "citation": "ASSUMPTION. Above this the approach becomes uncomfortable for a deep drafted vessel and under keel clearance margins tighten. Verify with each port authority."
+    },
+    "precipitation_mm_handling_suspend": {
+      "value": 20.0,
+      "unit": "mm/day",
+      "citation": "ASSUMPTION. Coal and iron ore fines are hygroscopic. Heavy rain both stops open grab handling and raises the transportable moisture limit risk on the cargo already loaded. Verify against the terminal's wet weather procedure."
+    },
+    "days_lost_per_suspended_day": {
+      "value": 1.0,
+      "unit": "days",
+      "citation": "DEFINITION. One forecast day that breaches a threshold is counted as one day of lost handling. This is deliberately the simplest possible rule so that it can be explained out loud in under sixty seconds, which is standing rule 1 of this project."
+    }
+  },
+
+  "nearby_offset_deg": {
+    "value": 0.35,
+    "unit": "degrees",
+    "citation": "DEFINITION. The approach and anchorage point is sampled this far seaward of the port position, roughly 35 to 39 km. Weather at the anchorage, not at the quay, is what decides whether a vessel can approach and whether lightering can proceed."
+  },
+
+  "cache_hours": {
+    "value": 3,
+    "unit": "hours",
+    "citation": "DEFINITION. A cached forecast younger than this is served without a network call. Standing rule 4 of this project forbids a live external API call during a demonstration, so the cache is primed before a demonstration and FREIGHT_WEATHER_OFFLINE=1 blocks the network entirely."
+  }
+}

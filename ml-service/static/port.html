@@ -1,0 +1,646 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Port Operator Dashboard</title>
+<link rel="stylesheet" href="/static/app.css">
+</head><body class="single">
+
+<a class="skip" href="#main">Skip to main content</a>
+
+<!-- The header is the entry for this port in a pilot book: what the port is, and
+     what a mariner is told before anything else about it. -->
+<header class="titleblock">
+  <div class="titleblock-inner">
+    <p class="chartno">Problem statement 26006. Ministry of Steel, SAIL.</p>
+    <h1>Port operator dashboard</h1>
+    <p class="strap">Tell charterers what your port can actually take, when it is free,
+      and what you are short of. Everything you enter here is dated, attributed to you,
+      and reaches every buyer using the decision console.</p>
+    <p id="who" class="badge off" role="status">Not signed in.</p>
+    <p style="margin:16px 0 0"><a class="away" href="/"
+      style="color:var(--shallows);font-size:15px;text-decoration:none;border-bottom:1px solid transparent">Go to the buyer's decision console</a></p>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+
+<!-- ================= SIGN IN ================= -->
+<section id="signin" aria-labelledby="h-signin">
+  <h2 id="h-signin">Sign in to your port</h2>
+  <p class="lead">Each port has one password. It was generated for you by the project
+  team and it is written in the file passwords dot t x t, which never leaves the
+  team's machine and is never committed to version control. Signing in gives you
+  access to your own port and to no other.</p>
+
+  <form id="loginform" class="card">
+    <label for="portsel">Your port</label>
+    <select id="portsel" required aria-describedby="porthint">
+      <option value="">Choose your port</option>
+    </select>
+    <p class="hint" id="porthint">Seven East Coast ports are modelled in this system.</p>
+
+    <label for="pw">Password</label>
+    <input id="pw" type="password" autocomplete="current-password" required
+      aria-describedby="pwhint">
+    <p class="hint" id="pwhint">Three maritime words and four digits, joined by hyphens.
+    For example, winch hyphen yardarm hyphen anchor hyphen eight seven two five.
+    Passwords are built from words rather than random characters so that they can be
+    read aloud and typed back accurately.</p>
+
+    <button class="btn wide" id="loginbtn" type="submit">Sign in</button>
+  </form>
+
+  <div id="loginmsg" role="alert" aria-live="assertive"></div>
+
+  <div id="provision"></div>
+</section>
+
+<!-- ================= DASHBOARD ================= -->
+<section id="dash" hidden aria-labelledby="h-dash">
+  <h2 id="h-dash">Your port at a glance</h2>
+  <p class="lead" id="glancelead"></p>
+  <div class="card"><ul class="facts" id="glance"></ul>
+    <p class="cite" id="glancecite"></p></div>
+
+  <!-- ---------- WEATHER ---------- -->
+  <h2>Weather at your quay and your approach anchorage</h2>
+  <p class="lead">Forecast days are compared against the operating limits in this
+  system's weather thresholds file. A day that breaches a limit is counted as a day
+  of lost handling, and lost days are priced as demurrage in the landed cost that
+  charterers see for your port. The approach anchorage is sampled roughly thirty five
+  kilometres seaward, because weather there decides whether a vessel can reach you at
+  all.</p>
+  <div class="btnrow">
+    <button type="button" class="btn quiet" id="wxrefresh">Refresh the forecast now</button>
+  </div>
+  <div id="wx" aria-live="polite"><p class="lead">Loading the forecast.</p></div>
+
+  <!-- ---------- DECLARATION FORM ---------- -->
+  <h2>Declare your handling areas</h2>
+  <p class="lead">List each laydown or handling area you can offer, how large it is,
+  when it is free, and which classes of ship it can take. A charterer whose vessel
+  class no area of yours accepts, or whose arrival window no free area covers, is
+  told so by name and by date rather than being quoted a berth you cannot give them.
+  An area with no dates is treated as open, because saying nothing about dates is not
+  the same as saying the area is blocked.</p>
+
+  <div id="areas"></div>
+  <div class="btnrow">
+    <button type="button" class="btn quiet" id="addarea">Add a handling area</button>
+  </div>
+
+  <h2>Rank the cargo your port most wants</h2>
+  <p class="lead">Rank one means the cargo you are shortest of and most want landed.
+  This is intelligence for the buyer, and it is reported beside the ranking on the
+  business dashboard, never inside it. Wanting a cargo does not make that cargo
+  cheaper to ship to you, so this figure is never allowed to change a landed cost.
+  What it does is tell a charterer where their cargo will find a buyer.</p>
+
+  <div id="demand"></div>
+  <div class="btnrow">
+    <button type="button" class="btn quiet" id="adddemand">Add a cargo demand line</button>
+  </div>
+
+  <h2>Correct our operating figures for your port</h2>
+  <p class="lead">Almost every operating number this system holds about your port is
+  an unverified assumption, and it says so on screen. You can replace them. Anything
+  you enter here is labelled operator declared, dated, and attributed to you wherever
+  a charterer sees it. Leave a field empty to keep our published or assumed figure.</p>
+
+  <fieldset>
+    <legend>Port level operating figures</legend>
+
+    <label for="op_disch">Discharge rate, tonnes per day</label>
+    <input id="op_disch" type="number" min="1" max="500000" step="500"
+      aria-describedby="op_disch_h">
+    <p class="hint" id="op_disch_h">How many tonnes of dry bulk your terminal actually
+    moves off a ship in a working day.</p>
+
+    <label for="op_wait">Typical waiting time before a berth, days</label>
+    <input id="op_wait" type="number" min="0" max="90" step="0.5"
+      aria-describedby="op_wait_h">
+    <p class="hint" id="op_wait_h">This is the single most expensive number on the
+    page. Waiting time becomes demurrage, and demurrage lands directly in the cost per
+    tonne that a charterer compares your port against its neighbours on.</p>
+
+    <label for="op_charge">Port charges, United States dollars per tonne</label>
+    <input id="op_charge" type="number" min="0" max="1000" step="0.1">
+
+    <label for="op_light">Lightering cost, United States dollars per tonne</label>
+    <input id="op_light" type="number" min="0" max="1000" step="0.1"
+      aria-describedby="op_light_h">
+    <p class="hint" id="op_light_h">Leave empty if your port does not lighter at
+    anchorage.</p>
+  </fieldset>
+
+  <h2>Notes for charterers</h2>
+  <fieldset>
+    <legend>Free text shown on the business dashboard</legend>
+    <label for="declared_by">Your name and role</label>
+    <input id="declared_by" type="text" maxlength="120" required
+      aria-describedby="declared_by_h">
+    <p class="hint" id="declared_by_h">This is attributed beside every figure you
+    declare, so a charterer can see who told them.</p>
+
+    <label for="opnotes">Anything a charterer should know</label>
+    <textarea id="opnotes" maxlength="2000" aria-describedby="opnotes_h"></textarea>
+    <p class="hint" id="opnotes_h">Dredging work, a berth out of service, a monsoon
+    restriction, a rail evacuation constraint. Two thousand characters.</p>
+  </fieldset>
+
+  <div class="btnrow">
+    <button class="btn" id="savebtn" type="button">Save and publish to charterers</button>
+    <button class="btn quiet" id="reloadbtn" type="button">Discard changes and reload</button>
+  </div>
+  <div id="savemsg" role="alert" aria-live="assertive"></div>
+
+  <h2>Session</h2>
+  <p class="lead">Your session lasts twelve hours and is held in the service's memory
+  only. Restarting the service signs everybody out, and nothing about your session is
+  written to disk.</p>
+  <div class="btnrow">
+    <button class="btn danger" id="logoutbtn" type="button">Sign out</button>
+  </div>
+</section>
+
+</main>
+
+<script>
+"use strict";
+/* HAZARDS THAT ALREADY BIT THE OTHER PAGE IN THIS PROJECT. DO NOT REINTRODUCE.
+
+   1. No inline on* attributes anywhere. An inline handler is compiled with the form
+      owner in scope, and a form exposes its controls by id, so a name like `save`
+      resolves to the button rather than to the function and the click silently does
+      nothing. Every handler here is attached with addEventListener.
+   2. No implicit window.<id> globals. Several ids collide with built-in Window
+      properties, and window.origin in particular is a read-only string. Every
+      element is fetched explicitly with getElementById. */
+
+const $ = id => document.getElementById(id);
+const API = location.origin;
+
+let TOKEN = null;      // session token, memory only, never written to storage
+let META = null;       // vessel classes, cargo types, published reference
+let MODEL = { areas: [], cargo_demand: [] };
+
+const esc = s => String(s === null || s === undefined ? "" : s)
+  .replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    '"': "&quot;", "'": "&#39;" }[c]));
+const num = v => (v === "" || v === null || v === undefined) ? null : Number(v);
+
+async function call(path, opts) {
+  opts = opts || {};
+  const headers = Object.assign({}, opts.headers || {});
+  if (opts.body) headers["Content-Type"] = "application/json";
+  if (TOKEN) headers["Authorization"] = "Bearer " + TOKEN;
+  const r = await fetch(API + path, Object.assign({}, opts, { headers }));
+  let d = null;
+  try { d = await r.json(); } catch (e) { d = null; }
+  if (!r.ok) throw new Error(readError(d, r.status));
+  return d;
+}
+
+/* FastAPI returns `detail` as a string for our own errors and as an array of objects
+   for validation failures. Printing that array directly puts [object Object] on
+   screen, which tells a screen reader user precisely nothing. */
+function readError(d, status) {
+  if (!d) return "The request failed with status " + status + ".";
+  if (typeof d.detail === "string") return d.detail;
+  if (Array.isArray(d.detail)) {
+    return d.detail.map(e => {
+      const where = Array.isArray(e.loc) ? e.loc.slice(1).join(" ") : "input";
+      return where + ". " + e.msg;
+    }).join(" ") + ".";
+  }
+  return "The request failed with status " + status + ".";
+}
+
+const say = (el, cls, html) => { $(el).innerHTML = '<div class="' + cls + '">' + html + "</div>"; };
+
+/* ---------------------------------------------------------------- sign in */
+
+async function boot() {
+  $("loginform").addEventListener("submit", ev => { ev.preventDefault(); signIn(); });
+  $("addarea").addEventListener("click", () => { collect(); MODEL.areas.push(blankArea()); drawAreas(true); });
+  $("adddemand").addEventListener("click", () => { collect(); MODEL.cargo_demand.push(blankDemand()); drawDemand(true); });
+  $("savebtn").addEventListener("click", save);
+  $("reloadbtn").addEventListener("click", () => loadDeclaration(true));
+  $("logoutbtn").addEventListener("click", signOut);
+  $("wxrefresh").addEventListener("click", () => loadWeather(true));
+
+  try {
+    const st = await call("/ml/portal/status");
+    const sel = $("portsel");
+    st.ports.forEach(p => sel.add(new Option(p.name + ", " + p.state, p.code)));
+    if (!st.credentials_generated) {
+      say("provision", "note",
+        "<b>No port passwords have been generated on this machine yet.</b> " +
+        "The project team runs the command python3 scripts slash " +
+        "generate underscore port underscore credentials dot p y once. That writes " +
+        "one password per port into passwords dot t x t and the salted hashes into " +
+        "the credentials file. Both files are in git ignore.");
+    } else {
+      $("provision").innerHTML = '<p class="lead">' + st.ports_provisioned.length +
+        " of " + st.total_ports + " ports have a password issued.</p>";
+    }
+  } catch (e) {
+    say("provision", "err", "<b>The service is not reachable.</b> " + esc(e.message) +
+      " Confirm it is running, then reload this page.");
+  }
+}
+
+async function signIn() {
+  const btn = $("loginbtn");
+  btn.disabled = true; btn.textContent = "Signing in…";
+  $("loginmsg").innerHTML = "";
+  try {
+    const s = await call("/ml/portal/login", {
+      method: "POST",
+      body: JSON.stringify({ port_code: $("portsel").value, password: $("pw").value })
+    });
+    TOKEN = s.token;
+    $("pw").value = "";
+    const w = $("who");
+    w.className = "badge on";
+    w.textContent = "Signed in as the operator of " + s.port_name +
+      ", port code " + s.port_code + ".";
+    $("signin").hidden = true;
+    $("dash").hidden = false;
+    $("main").focus();
+    await loadDeclaration(false);
+    loadWeather(false);
+  } catch (e) {
+    say("loginmsg", "err", "<b>Not signed in.</b> " + esc(e.message));
+    $("pw").focus();
+  } finally {
+    btn.disabled = false; btn.textContent = "Sign in";
+  }
+}
+
+async function signOut() {
+  try { await call("/ml/portal/logout", { method: "POST" }); } catch (e) { /* signing out always succeeds locally */ }
+  TOKEN = null; MODEL = { areas: [], cargo_demand: [] };
+  $("dash").hidden = true;
+  $("signin").hidden = false;
+  const w = $("who"); w.className = "badge off"; w.textContent = "Not signed in.";
+  say("loginmsg", "done", "<b>Signed out.</b> Your session has been discarded.");
+  $("portsel").focus();
+}
+
+/* ------------------------------------------------------- the declaration */
+
+const blankArea = () => ({ name: "", area_sq_m: "", storage_capacity_tonnes: "",
+  available_from: "", available_to: "", accepts_vessel_classes: [], max_draft_m: "",
+  discharge_rate_tonnes_per_day: "", current_wait_days: "", notes: "" });
+
+const blankDemand = () => ({ cargo_type: (META && META.cargo_types[0].code) || "",
+  demand_rank: MODEL.cargo_demand.length + 1, monthly_demand_tonnes: "",
+  indicative_price_inr_per_tonne: "", notes: "" });
+
+async function loadDeclaration(announce) {
+  const d = await call("/ml/portal/declaration");
+  META = d;
+  MODEL = {
+    areas: (d.declaration.areas || []).map(a => Object.assign(blankArea(), a)),
+    cargo_demand: (d.declaration.cargo_demand || []),
+    operational: d.declaration.operational || {},
+    operator_notes: d.declaration.operator_notes || "",
+    declared_by: d.declaration.declared_by || ""
+  };
+
+  const r = d.published_reference;
+  $("glancelead").textContent = d.port_name + ", " + d.state + ", port code " +
+    d.port_code + ". " + (d.has_declaration
+      ? "You last declared on " + String(d.declaration.updated_at).slice(0, 10) +
+        ", and " + d.totals.area_count + " handling area" +
+        (d.totals.area_count === 1 ? "" : "s") + " totalling " +
+        Number(d.totals.total_area_sq_m).toLocaleString("en-IN") +
+        " square metres are published to charterers."
+      : "You have not declared anything yet, so charterers currently see only our " +
+        "published and assumed figures for your port.");
+
+  $("glance").innerHTML =
+    row("Maximum draft published", r.max_draft_m + " metres") +
+    row("Maximum length overall", r.max_loa_m + " metres") +
+    row("Maximum beam", r.max_beam_m + " metres") +
+    row("Maximum deadweight", Number(r.max_dwt).toLocaleString("en-IN") + " tonnes") +
+    row("Lightering at anchorage", r.lightering_available ? "yes" : "no");
+  const draftCite = String(r.citations.max_draft_m || "none recorded").trim();
+  $("glancecite").textContent = "Draft source. " + draftCite +
+    (/[.!?]$/.test(draftCite) ? "" : ".") +
+    " You cannot declare a berth deeper than the published port maximum, because the " +
+    "approach channel governs. You can declare one shallower, for instance when it " +
+    "has shoaled.";
+
+  $("declared_by").value = MODEL.declared_by;
+  $("opnotes").value = MODEL.operator_notes;
+  const o = MODEL.operational || {};
+  $("op_disch").value = o.discharge_rate_tonnes_per_day ?? "";
+  $("op_wait").value = o.typical_wait_days ?? "";
+  $("op_charge").value = o.port_charge_usd_per_tonne ?? "";
+  $("op_light").value = o.lightering_cost_usd_per_tonne ?? "";
+
+  drawAreas(false);
+  drawDemand(false);
+  if (announce) say("savemsg", "done", "<b>Reloaded.</b> Unsaved changes were discarded.");
+}
+
+const row = (k, v) => "<li><span>" + esc(k) + "</span><b>" + esc(v) + "</b></li>";
+
+function drawAreas(focusLast) {
+  const host = $("areas");
+  if (!MODEL.areas.length) {
+    host.innerHTML = '<p class="lead">You have declared no handling areas. ' +
+      "Select add a handling area to declare one.</p>";
+    return;
+  }
+  host.innerHTML = MODEL.areas.map((a, i) => {
+    const n = i + 1;
+    return '<fieldset data-area="' + i + '"><legend>Handling area ' + n + '</legend>' +
+      lab("a_name_" + i, "Name of this area") +
+      '<input type="text" id="a_name_' + i + '" maxlength="80" value="' + esc(a.name) +
+        '" data-f="name">' +
+
+      lab("a_sqm_" + i, "Total area, square metres") +
+      '<input type="number" id="a_sqm_' + i + '" min="1" step="100" value="' +
+        esc(a.area_sq_m) + '" data-f="area_sq_m">' +
+
+      lab("a_cap_" + i, "Storage capacity of this area, tonnes") +
+      '<input type="number" id="a_cap_' + i + '" min="0" step="1000" value="' +
+        esc(a.storage_capacity_tonnes) + '" data-f="storage_capacity_tonnes">' +
+      '<p class="hint">A charterer is told when this is smaller than the parcel the ' +
+        'ship discharges, so the cargo has to move out as it lands.</p>' +
+
+      lab("a_from_" + i, "Available from") +
+      '<input type="date" id="a_from_' + i + '" value="' + esc(a.available_from) +
+        '" data-f="available_from">' +
+
+      lab("a_to_" + i, "Available until") +
+      '<input type="date" id="a_to_' + i + '" value="' + esc(a.available_to) +
+        '" data-f="available_to">' +
+      '<p class="hint">Leave both dates empty if the area is open ended. An area with ' +
+        'no dates is treated as available.</p>' +
+
+      '<fieldset><legend>Vessel classes this area can take</legend>' +
+      '<ul class="checks">' + (META.vessel_classes || []).map(v =>
+        '<li><input type="checkbox" id="a_v_' + i + "_" + esc(v.name) + '" data-vc="' +
+        esc(v.name) + '"' + (a.accepts_vessel_classes.indexOf(v.name) >= 0 ? " checked" : "") +
+        '><label for="a_v_' + i + "_" + esc(v.name) + '">' + esc(v.name) + ". " +
+        Number(v.nominal_dwt).toLocaleString("en-IN") + " tonnes deadweight, laden draft " +
+        v.typical_laden_draft_m + " metres.</label></li>").join("") +
+      '</ul><p class="hint">A charterer sailing a class you leave unticked is told, ' +
+        'by name and by date, that you do not accept it. Tick nothing and the area ' +
+        'offers nothing.</p></fieldset>' +
+
+      lab("a_draft_" + i, "Draft at this berth, metres") +
+      '<input type="number" id="a_draft_' + i + '" min="0" max="30" step="0.1" value="' +
+        esc(a.max_draft_m) + '" data-f="max_draft_m">' +
+      '<p class="hint">Only a figure shallower than the published port maximum is ' +
+        'applied. Leave empty to use the published one.</p>' +
+
+      lab("a_rate_" + i, "Discharge rate at this berth, tonnes per day") +
+      '<input type="number" id="a_rate_' + i + '" min="1" step="500" value="' +
+        esc(a.discharge_rate_tonnes_per_day) + '" data-f="discharge_rate_tonnes_per_day">' +
+
+      lab("a_wait_" + i, "Waiting time for this berth right now, days") +
+      '<input type="number" id="a_wait_' + i + '" min="0" max="90" step="0.5" value="' +
+        esc(a.current_wait_days) + '" data-f="current_wait_days">' +
+
+      lab("a_notes_" + i, "Notes about this area") +
+      '<textarea id="a_notes_' + i + '" maxlength="600" data-f="notes">' +
+        esc(a.notes) + '</textarea>' +
+
+      '<div class="btnrow"><button type="button" class="btn danger" data-del="' + i +
+        '">Remove handling area ' + n + '</button></div>' +
+      "</fieldset>";
+  }).join("");
+
+  host.querySelectorAll("button[data-del]").forEach(b => {
+    b.addEventListener("click", () => {
+      collect();
+      MODEL.areas.splice(Number(b.dataset.del), 1);
+      drawAreas(false);
+      $("addarea").focus();
+    });
+  });
+  if (focusLast) {
+    const f = host.querySelector('fieldset[data-area="' + (MODEL.areas.length - 1) + '"] input');
+    if (f) f.focus();
+  }
+}
+
+function drawDemand(focusLast) {
+  const host = $("demand");
+  if (!MODEL.cargo_demand.length) {
+    host.innerHTML = '<p class="lead">You have ranked no cargo yet. ' +
+      "Select add a cargo demand line to rank one.</p>";
+    return;
+  }
+  host.innerHTML = MODEL.cargo_demand.map((d, i) => {
+    const n = i + 1;
+    return '<fieldset data-dem="' + i + '"><legend>Cargo demand line ' + n + '</legend>' +
+      lab("d_cargo_" + i, "Cargo") +
+      '<select id="d_cargo_' + i + '" data-f="cargo_type">' +
+        (META.cargo_types || []).map(c => '<option value="' + esc(c.code) + '"' +
+          (c.code === d.cargo_type ? " selected" : "") + ">" + esc(c.name) +
+          "</option>").join("") + "</select>" +
+
+      lab("d_rank_" + i, "Demand rank, where one is the cargo you most want") +
+      '<input type="number" id="d_rank_' + i + '" min="1" max="20" step="1" value="' +
+        esc(d.demand_rank) + '" data-f="demand_rank">' +
+
+      lab("d_qty_" + i, "Monthly demand, tonnes") +
+      '<input type="number" id="d_qty_' + i + '" min="0" step="1000" value="' +
+        esc(d.monthly_demand_tonnes) + '" data-f="monthly_demand_tonnes">' +
+
+      lab("d_price_" + i, "Indicative price buyers here are paying, rupees per tonne") +
+      '<input type="number" id="d_price_' + i + '" min="0" step="10" value="' +
+        esc(d.indicative_price_inr_per_tonne) + '" data-f="indicative_price_inr_per_tonne">' +
+      '<p class="hint">Reported to charterers as your own indication. It never enters ' +
+        'the landed cost calculation.</p>' +
+
+      lab("d_notes_" + i, "Notes about this demand") +
+      '<textarea id="d_notes_' + i + '" maxlength="600" data-f="notes">' +
+        esc(d.notes) + '</textarea>' +
+
+      '<div class="btnrow"><button type="button" class="btn danger" data-deldem="' + i +
+        '">Remove cargo demand line ' + n + '</button></div>' +
+      "</fieldset>";
+  }).join("");
+
+  host.querySelectorAll("button[data-deldem]").forEach(b => {
+    b.addEventListener("click", () => {
+      collect();
+      MODEL.cargo_demand.splice(Number(b.dataset.deldem), 1);
+      drawDemand(false);
+      $("adddemand").focus();
+    });
+  });
+  if (focusLast) {
+    const f = host.querySelector('fieldset[data-dem="' + (MODEL.cargo_demand.length - 1) + '"] select');
+    if (f) f.focus();
+  }
+}
+
+const lab = (id, text) => '<label for="' + id + '">' + esc(text) + "</label>";
+
+/* Read every control back into MODEL. Called before any redraw, so adding or
+   removing a row can never silently discard what was typed into the others. */
+function collect() {
+  document.querySelectorAll("#areas fieldset[data-area]").forEach(fs => {
+    const a = MODEL.areas[Number(fs.dataset.area)];
+    if (!a) return;
+    fs.querySelectorAll("[data-f]").forEach(el => { a[el.dataset.f] = el.value; });
+    a.accepts_vessel_classes = Array.from(fs.querySelectorAll("[data-vc]"))
+      .filter(c => c.checked).map(c => c.dataset.vc);
+  });
+  document.querySelectorAll("#demand fieldset[data-dem]").forEach(fs => {
+    const d = MODEL.cargo_demand[Number(fs.dataset.dem)];
+    if (!d) return;
+    fs.querySelectorAll("[data-f]").forEach(el => { d[el.dataset.f] = el.value; });
+  });
+  MODEL.declared_by = $("declared_by").value;
+  MODEL.operator_notes = $("opnotes").value;
+  MODEL.operational = {
+    discharge_rate_tonnes_per_day: $("op_disch").value,
+    typical_wait_days: $("op_wait").value,
+    port_charge_usd_per_tonne: $("op_charge").value,
+    lightering_cost_usd_per_tonne: $("op_light").value
+  };
+}
+
+async function save() {
+  collect();
+  const btn = $("savebtn");
+  $("savemsg").innerHTML = "";
+
+  if (!MODEL.declared_by || MODEL.declared_by.trim().length < 2) {
+    say("savemsg", "err", "<b>Nothing was saved.</b> Enter your name and role first. " +
+      "Every figure you declare is attributed to a person, because an unattributed " +
+      "declaration is worth no more to a charterer than our own assumption.");
+    $("declared_by").focus();
+    return;
+  }
+  const unnamed = MODEL.areas.findIndex(a => !String(a.name || "").trim());
+  if (unnamed >= 0) {
+    say("savemsg", "err", "<b>Nothing was saved.</b> Handling area " + (unnamed + 1) +
+      " has no name. Give every area a name a charterer would recognise, such as " +
+      "berth three or the eastern stockyard.");
+    const el = $("a_name_" + unnamed); if (el) el.focus();
+    return;
+  }
+  const noArea = MODEL.areas.findIndex(a => !(Number(a.area_sq_m) > 0));
+  if (noArea >= 0) {
+    say("savemsg", "err", "<b>Nothing was saved.</b> Handling area " + (noArea + 1) +
+      " has no size. Enter the total area in square metres.");
+    const el = $("a_sqm_" + noArea); if (el) el.focus();
+    return;
+  }
+
+  const body = {
+    declared_by: MODEL.declared_by.trim(),
+    operator_notes: MODEL.operator_notes || "",
+    areas: MODEL.areas.map(a => ({
+      name: String(a.name).trim(),
+      area_sq_m: Number(a.area_sq_m),
+      storage_capacity_tonnes: num(a.storage_capacity_tonnes),
+      available_from: a.available_from || null,
+      available_to: a.available_to || null,
+      accepts_vessel_classes: a.accepts_vessel_classes || [],
+      max_draft_m: num(a.max_draft_m),
+      discharge_rate_tonnes_per_day: num(a.discharge_rate_tonnes_per_day),
+      current_wait_days: num(a.current_wait_days),
+      notes: a.notes || ""
+    })),
+    cargo_demand: MODEL.cargo_demand.map(d => ({
+      cargo_type: d.cargo_type,
+      demand_rank: Number(d.demand_rank),
+      monthly_demand_tonnes: num(d.monthly_demand_tonnes),
+      indicative_price_inr_per_tonne: num(d.indicative_price_inr_per_tonne),
+      notes: d.notes || ""
+    })),
+    operational: {
+      discharge_rate_tonnes_per_day: num(MODEL.operational.discharge_rate_tonnes_per_day),
+      typical_wait_days: num(MODEL.operational.typical_wait_days),
+      port_charge_usd_per_tonne: num(MODEL.operational.port_charge_usd_per_tonne),
+      lightering_cost_usd_per_tonne: num(MODEL.operational.lightering_cost_usd_per_tonne)
+    }
+  };
+
+  btn.disabled = true; btn.textContent = "Saving…";
+  try {
+    const res = await call("/ml/portal/declaration",
+      { method: "PUT", body: JSON.stringify(body) });
+    say("savemsg", "done", "<b>" + esc(res.message) + "</b> Saved at " +
+      esc(String(res.updated_at).replace("T", " at ")) + ".");
+  } catch (e) {
+    say("savemsg", "err", "<b>Nothing was saved.</b> " + esc(e.message));
+  } finally {
+    btn.disabled = false; btn.textContent = "Save and publish to charterers";
+  }
+}
+
+/* ------------------------------------------------------------- weather */
+
+async function loadWeather(refresh) {
+  const btn = $("wxrefresh");
+  btn.disabled = true;
+  if (refresh) btn.textContent = "Fetching…";
+  try {
+    const w = await call("/ml/portal/weather" + (refresh ? "?refresh=true" : ""));
+    $("wx").innerHTML = renderWeather(w);
+  } catch (e) {
+    say("wx", "err", "<b>The forecast could not be loaded.</b> " + esc(e.message));
+  } finally {
+    btn.disabled = false; btn.textContent = "Refresh the forecast now";
+  }
+}
+
+function bandClass(b) { return b === "clear" ? "ok" : b === "disrupted" ? "no" : "mid"; }
+
+function renderWeather(w) {
+  const a = w.advisory, f = w.freshness;
+  if (!w.quay.days_forecast && !w.anchorage.days_forecast) {
+    return '<div class="note"><b>No forecast is available yet.</b> ' +
+      esc((f.quay && f.quay.note) || "") + " Select refresh the forecast now.</div>";
+  }
+  let h = '<div class="card"><h3>Advisory. <span class="' + bandClass(a.risk_band) +
+    '">' + esc(a.risk_band) + "</span></h3><p>" + esc(a.headline) + "</p>" +
+    "<p>Expected weather delay over the forecast period. <b>" +
+    a.expected_weather_delay_days + " day" +
+    (a.expected_weather_delay_days === 1 ? "" : "s") + ".</b> " +
+    "This is added to waiting time and priced as demurrage in the landed cost that " +
+    "charterers see for your port.</p>" +
+    (a.applies_to_lightering ? "<p>Your port lighters at anchorage, so the anchorage " +
+      "sea state below governs whether that work can proceed at all.</p>" : "") +
+    '<p class="cite">Forecast source. ' + esc(f.quay.source) +
+    (f.quay.fetched_at ? ", fetched " + esc(String(f.quay.fetched_at).replace("T", " at ")) : "") +
+    (f.quay.stale ? ". This forecast is stale. " + esc(f.quay.note || "") : "") +
+    (w.marine_data_available ? "" : " Wave height was not available for this position, " +
+      "so the advisory uses wind and rainfall only.") +
+    " Provider. " + esc(w.provider) + "</p></div>";
+
+  h += "<h3>Day by day at your quay</h3>" + days(w.quay);
+  h += "<h3>Day by day at your approach anchorage, " +
+    w.anchorage_position.lat + " north, " + w.anchorage_position.lon + " east</h3>" +
+    days(w.anchorage);
+  return h;
+}
+
+function days(part) {
+  if (!part.days_forecast) return '<p class="lead">No forecast for this position.</p>';
+  return '<ol class="days">' + part.days.map(d =>
+    "<li><p class=\"day-h\">" + esc(d.date) + ". " +
+    '<span class="' + (d.workable ? "ok" : "no") + '">' +
+    (d.workable ? "Workable." : "Not workable.") + "</span></p>" +
+    '<p class="day-b">' +
+    (d.wind_speed_ms_max !== null ? "Wind to " + d.wind_speed_ms_max + " metres per second. " : "") +
+    (d.wave_height_m_max !== null && d.wave_height_m_max !== undefined
+      ? "Significant wave height to " + d.wave_height_m_max + " metres. " : "") +
+    (d.precipitation_mm !== null ? "Rainfall " + d.precipitation_mm + " millimetres. " : "") +
+    (d.breaches.length ? "Limits breached. " + esc(d.breaches.join(". ")) + "." : "No operating limit is breached.") +
+    "</p></li>").join("") + "</ol>";
+}
+
+boot();
+</script></body></html>

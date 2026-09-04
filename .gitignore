@@ -1,0 +1,32 @@
+# ---------------------------------------------------------------------------
+# Secrets. Never commit these.
+# passwords.txt holds the plaintext port operator passwords produced by
+# scripts/generate_port_credentials.py. It exists so the team can hand a
+# password to each port operator once. It must never enter version control.
+# ---------------------------------------------------------------------------
+passwords.txt
+data/port_owners/credentials.json
+
+# Port operator declarations are live operational data, not source code.
+data/port_owners/declarations/
+
+# Cached weather responses. Regenerated on demand, never source of truth.
+data/cache/
+
+# Python
+__pycache__/
+*.py[cod]
+ml-service/venv/
+ml-service/models/*.joblib
+.pytest_cache/
+
+# Node
+node_modules/
+web/dist/
+npm-debug.log*
+
+# Editor and OS
+.DS_Store
+*.swp
+.idea/
+.vscode/

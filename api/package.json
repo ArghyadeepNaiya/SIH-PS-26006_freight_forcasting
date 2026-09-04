@@ -1,0 +1,6 @@
+{
+  "name": "freight-api", "version": "0.1.0", "type": "module",
+  "scripts": { "dev": "node src/server.js" },
+  "dependencies": { "express": "^4.19.2", "cors": "^2.8.5", "axios": "^1.7.2",
+                    "dotenv": "^16.4.5", "mongoose": "^8.4.0", "morgan": "^1.10.0" }
+}

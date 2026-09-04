@@ -1,0 +1,54 @@
+{
+  "_note": "Laden draft and dimensions are typical values for the class. Real vessels vary. Source: general maritime reference (Baltic Exchange / MacroHive explainer on BDI vessel classes). Verify before finale.",
+  "_cubic_note": "grain_capacity_m3 is the volume of the cargo holds. Divided by nominal_dwt it gives the vessel's own break even stowage factor. A cargo whose stowage factor exceeds that ratio CUBES OUT, meaning the holds fill before the deadweight is reached. All grain capacities are typical class figures and are assumptions until verified against real vessel particulars.",
+  "vessel_classes": [
+    {
+      "name": "Handysize",
+      "dwt_min": 10000, "dwt_max": 40000, "nominal_dwt": 32000,
+      "typical_loa_m": 180.0, "typical_beam_m": 28.0, "typical_laden_draft_m": 10.0,
+      "grain_capacity_m3": 43000,
+      "geared": true,
+      "index_key": "BHSI",
+      "notes": "Fits almost anywhere. Own cranes. Highest cost per tonne.",
+      "citations": {
+        "grain_capacity_m3": "ASSUMPTION - typical class figure, break even stowage factor about 1.34 m3/t. Verify against vessel particulars."
+      }
+    },
+    {
+      "name": "Supramax",
+      "dwt_min": 50000, "dwt_max": 60000, "nominal_dwt": 56000,
+      "typical_loa_m": 190.0, "typical_beam_m": 32.2, "typical_laden_draft_m": 12.5,
+      "grain_capacity_m3": 71000,
+      "geared": true,
+      "index_key": "BSI",
+      "notes": "Five holds, deck cranes. Workhorse for constrained ports.",
+      "citations": {
+        "grain_capacity_m3": "ASSUMPTION - typical class figure, break even stowage factor about 1.27 m3/t. Verify against vessel particulars."
+      }
+    },
+    {
+      "name": "Panamax",
+      "dwt_min": 60000, "dwt_max": 80000, "nominal_dwt": 75000,
+      "typical_loa_m": 225.0, "typical_beam_m": 32.2, "typical_laden_draft_m": 13.5,
+      "grain_capacity_m3": 89000,
+      "geared": false,
+      "index_key": "BPI",
+      "notes": "Usually carries 60,000-70,000 t of coal or grain. Gearless, needs shore cranes.",
+      "citations": {
+        "grain_capacity_m3": "ASSUMPTION - typical class figure, break even stowage factor about 1.19 m3/t. Verify against vessel particulars."
+      }
+    },
+    {
+      "name": "Capesize",
+      "dwt_min": 120000, "dwt_max": 200000, "nominal_dwt": 170000,
+      "typical_loa_m": 290.0, "typical_beam_m": 45.0, "typical_laden_draft_m": 17.5,
+      "grain_capacity_m3": 195000,
+      "geared": false,
+      "index_key": "BCI",
+      "notes": "Iron ore and coal. Too large for Panama and Suez canals. Lowest cost per tonne when it can berth.",
+      "citations": {
+        "grain_capacity_m3": "ASSUMPTION - typical class figure, break even stowage factor about 1.15 m3/t. Verify against vessel particulars."
+      }
+    }
+  ]
+}

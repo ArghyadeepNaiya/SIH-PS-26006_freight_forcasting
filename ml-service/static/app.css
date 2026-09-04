@@ -1,0 +1,610 @@
+@import url("/static/fonts.css");
+
+/* ===========================================================================
+   FREIGHT CHARTER DECISION SYSTEM. SHARED VISUAL SYSTEM.
+   Used by static/index.html (the business dashboard) and static/port.html
+   (the port operator dashboard).
+
+   WHERE THIS LOOK COMES FROM. Not from dashboard fashion. From the document a
+   mariner actually reads before deciding whether they can enter a port: the
+   hydrographic chart, in the night rendering a bridge display uses at sea.
+   Four things are borrowed, and each carries meaning rather than decorating.
+
+   1. DEPTH BANDS. A chart tints water by depth. This product exists because
+      depth caps how many tonnes a ship can carry, so every surface in the
+      interface is a step on a depth ramp. Surfaces get lighter as they rise
+      toward the reader, never darker.
+   2. MAGENTA OVERPRINT. On an Admiralty chart every cautionary and advisory
+      note is printed in magenta and nothing else is. So magenta here means an
+      advisory and means nothing else. If everything were an advisory, nothing
+      would be.
+   3. SOUNDINGS. A chart prints depth as numerals directly on the water.
+      Numerals are therefore the loudest content in this interface: set in a
+      mono face with tabular figures, always larger than their own label.
+   4. PORT AND STARBOARD. Red to port, green to starboard. That is why refused
+      is red and accepted is green here. It is a convention this audience
+      already reads, not a generic success and error pair.
+
+   COLOUR WAS VALIDATED, NOT EYEballed. The status hues were re-stepped after
+   a colourblindness check found the original magenta and red only 10.9 apart
+   in normal vision, which is below the readable floor. The pair now sits at
+   17.6. Every ink is AA or better on every surface it is actually used on,
+   with one recorded exception: port red is AA-large-only on the shoal
+   surface, so port red text is never placed on shoal.
+
+   ACCESSIBILITY IS NOT A LAYER ON TOP OF THIS. Colour never carries meaning
+   alone. Every status colour ships with the word beside it. Focus is heavy and
+   never removed. Motion is one moment, answering the user's own action, and is
+   switched off entirely for anyone who asks for that.
+   =========================================================================== */
+
+:root {
+  /* --- the depth ramp. Surfaces, deepest to shallowest. --- */
+  --deep:       #06111A;   /* the ground. Open water at night. */
+  --shelf:      #0C1D28;   /* panels and cards. One band up. */
+  --shoal:      #123243;   /* raised surfaces, inputs, the caution band. */
+  --drying:     #1B4257;   /* hairlines and borders. */
+  --shallows:   #6FC6E8;   /* the action colour. The top step of the same water. */
+
+  /* --- ink --- */
+  --chartwhite: #E4EFF4;   /* primary text. Chart paper, reversed out. */
+  --sounding:   #7FB2C8;   /* secondary text. The colour soundings are printed in. */
+  --faint:      #55798C;   /* tertiary. Citations, footnotes. */
+
+  /* --- state. Each of these always appears with a word beside it. --- */
+  --starboard:  #45CE9B;   /* clear, accepted, workable. */
+  --buoy:       #E0AE3E;   /* unverified assumption, caution. */
+  --port:       #F5675A;   /* refused, not workable, rejected. */
+  --overprint:  #D97BFF;   /* magenta. Advisory and cautionary notes only. */
+
+  /* --- chart-mark steps of the same hues, dropped into the band a mark needs
+         on a dark ground. A badge and its mark stay recognisably one colour. --- */
+  --starboard-mark: #00A070;
+  --port-mark:      #DC5045;
+  --overprint-mark: #B356D7;
+
+  --rule: 1px solid var(--drying);
+  --measure: 68ch;         /* prose never runs wider than this. */
+}
+
+/* ---------------------------------------------------------------- reset */
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--deep);
+  color: var(--chartwhite);
+  font: 400 16px/1.55 "Barlow Semi Condensed", "Fira Sans Condensed",
+        "Helvetica Neue", Arial, sans-serif;
+  /* Depth contours. Two very faint diagonal washes, so the ground reads as
+     water with relief in it rather than as flat black. They are behind
+     everything and carry no meaning, so they are cheap and static. */
+  background-image:
+    radial-gradient(1100px 620px at 12% -10%, #0B2331 0%, transparent 70%),
+    radial-gradient(900px 520px at 96% 4%, #0A1E2B 0%, transparent 68%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Figures are the content here, so they are mono and they line up in a column. */
+.fig, .amt, .bdrow b, .facts b, .meta b, .skill-facts b, .price .amt {
+  font-family: "IBM Plex Mono", ui-monospace, "DejaVu Sans Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -0.01em;
+}
+
+/* ------------------------------------------------------------- landmarks */
+
+:focus-visible {
+  outline: 3px solid var(--buoy);
+  outline-offset: 3px;
+  border-radius: 1px;
+}
+
+.skip {
+  position: absolute; left: -9999px; top: 0; z-index: 60;
+  background: var(--buoy); color: var(--deep);
+  padding: 14px 22px; font-weight: 700; font-size: 16px;
+}
+.skip:focus { left: 0; }
+
+.sr {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* --------------------------------------------------- the chart title block
+
+   Every hydrographic chart carries a block stating what the chart is, what its
+   units are, and when it was last corrected. That is exactly the information a
+   user of this system needs before trusting a number on it, so the header is
+   built as one. It replaces a row of facts joined by middle dots, which said
+   the same things while looking like every other product page.               */
+
+.titleblock {
+  border-bottom: 2px solid var(--drying);
+  padding: 26px 32px 20px;
+  background:
+    linear-gradient(180deg, rgba(18,50,67,.55) 0%, rgba(6,17,26,0) 100%);
+}
+.titleblock-inner { max-width: 1240px; }
+
+/* A plain sentence, not a tracked-out label sitting above the headline. */
+.chartno {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px; letter-spacing: 0; color: var(--sounding);
+  margin: 0 0 8px;
+}
+h1 {
+  font-family: "Barlow Condensed", "Barlow Semi Condensed", sans-serif;
+  font-weight: 700; font-size: clamp(30px, 4.4vw, 46px); line-height: 1.02;
+  margin: 0; letter-spacing: -0.005em; color: var(--chartwhite);
+}
+.titleblock .strap {
+  color: var(--sounding); font-size: 16px; margin: 8px 0 0;
+  max-width: var(--measure);
+}
+
+/* The units and corrections line, as a chart carries it. */
+.blocknotes {
+  display: flex; flex-wrap: wrap; gap: 8px 34px;
+  margin: 20px 0 0; padding: 14px 0 0; list-style: none;
+  border-top: 1px solid var(--drying);
+}
+.blocknotes > li { font-size: 14px; color: var(--faint); }
+.blocknotes .v {
+  display: block; color: var(--chartwhite); font-size: 15px;
+  font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums;
+  margin-top: 1px;
+}
+.blocknotes .v.scaffold { color: var(--buoy); }
+.blocknotes .v.real     { color: var(--starboard); }
+
+/* ------------------------------------------------------------------- nav
+
+   Tabs sit on the rule rather than floating above it as pills, and the current
+   one breaks through it. That is how a chart's sheet index reads.            */
+
+nav.sheets {
+  border-bottom: 1px solid var(--drying);
+  padding: 0 32px;
+  display: flex; gap: 4px; flex-wrap: wrap; align-items: stretch;
+}
+nav.sheets button {
+  background: none; border: 0; border-bottom: 3px solid transparent;
+  color: var(--sounding); font: inherit; font-size: 16px; font-weight: 500;
+  padding: 14px 16px 11px; cursor: pointer; margin-bottom: -1px;
+  transition: color .12s ease, border-color .12s ease;
+}
+nav.sheets button:hover { color: var(--chartwhite); }
+nav.sheets button[aria-current="page"] {
+  color: var(--chartwhite); border-bottom-color: var(--shallows);
+  font-weight: 600;
+}
+nav.sheets .away {
+  margin-left: auto; align-self: center; color: var(--shallows);
+  font-size: 15px; font-weight: 500; padding: 10px 4px 10px 16px;
+  text-decoration: none; border-bottom: 1px solid transparent;
+}
+nav.sheets .away:hover { border-bottom-color: var(--shallows); }
+
+/* ------------------------------------------------------------------ main */
+
+main { padding: 30px 32px 90px; max-width: 1240px; }
+.page[hidden] { display: none; }
+
+.grid { display: grid; grid-template-columns: 330px minmax(0,1fr); gap: 32px; align-items: start; }
+@media (max-width: 940px) { .grid { grid-template-columns: 1fr; } }
+
+h2 {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 600; font-size: 27px; line-height: 1.12; letter-spacing: 0;
+  color: var(--chartwhite); margin: 42px 0 4px;
+}
+h2:first-child { margin-top: 0; }
+h3 { font-size: 19px; font-weight: 600; margin: 0 0 6px; line-height: 1.2; }
+h4 { font-size: 16px; font-weight: 600; margin: 18px 0 4px; color: var(--chartwhite); }
+
+p { margin: 9px 0; }
+.lead { color: var(--sounding); font-size: 15.5px; margin: 4px 0 20px; max-width: var(--measure); }
+.sub  { color: var(--sounding); font-size: 14px; margin: 3px 0 0; }
+.cite { color: var(--faint); font-size: 13.5px; margin-top: 9px; max-width: var(--measure); font-style: normal; }
+
+/* ------------------------------------------------------------- surfaces */
+
+.card {
+  background: var(--shelf); border: var(--rule);
+  padding: 22px; margin-bottom: 16px;
+}
+.card-title { font-family: "Barlow Condensed", sans-serif; font-weight: 600;
+  font-size: 21px; margin: 0; line-height: 1.15; }
+
+/* --------------------------------------------------------------- forms */
+
+form label, .field-label {
+  display: block; font-size: 15px; color: var(--sounding);
+  margin: 18px 0 6px; font-weight: 500;
+}
+input[type=text], input[type=number], input[type=date], input[type=password],
+select, textarea {
+  width: 100%; background: var(--deep); color: var(--chartwhite);
+  border: 1px solid var(--drying); border-radius: 2px;
+  padding: 11px 12px; font: inherit; font-size: 16px;
+  transition: border-color .12s ease;
+}
+input[type=number] { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; }
+input:hover, select:hover, textarea:hover { border-color: #2A5F7B; }
+input:focus, select:focus, textarea:focus { border-color: var(--shallows); }
+textarea { min-height: 96px; resize: vertical; line-height: 1.5; }
+.hint { font-size: 13.5px; color: var(--faint); margin: 6px 0 0; max-width: var(--measure); }
+
+fieldset {
+  border: var(--rule); border-radius: 2px; padding: 18px 22px 22px;
+  margin: 0 0 18px; background: var(--shelf);
+}
+legend {
+  font-family: "Barlow Condensed", sans-serif; font-weight: 600; font-size: 20px;
+  padding: 0 10px; margin-left: -4px; color: var(--chartwhite);
+}
+fieldset fieldset { background: var(--shoal); margin-top: 18px; }
+fieldset fieldset legend { font-size: 17px; }
+
+.checks { list-style: none; padding: 0; margin: 10px 0 0; }
+.checks li { padding: 7px 0; }
+.checks label { display: inline; margin: 0; color: var(--chartwhite); font-size: 16px; font-weight: 400; }
+.checks input { width: auto; margin-right: 11px; accent-color: var(--shallows); transform: scale(1.3); }
+
+/* -------------------------------------------------------------- buttons */
+
+button { font-family: inherit; cursor: pointer; }
+
+.btn, button.go {
+  background: var(--shallows); color: var(--deep); border: 0; border-radius: 2px;
+  padding: 14px 26px; font: inherit; font-size: 17px; font-weight: 700;
+  letter-spacing: .005em; transition: background .12s ease;
+}
+.btn:hover:not(:disabled), button.go:hover:not(:disabled) { background: #96DAF5; }
+.btn:disabled, button.go:disabled { opacity: .5; cursor: progress; }
+button.go, .btn.wide { width: 100%; margin-top: 24px; }
+
+.btn.quiet {
+  background: none; color: var(--shallows); border: 1px solid var(--drying);
+  font-weight: 600; padding: 11px 18px; font-size: 15.5px;
+}
+.btn.quiet:hover { background: var(--shoal); color: #96DAF5; }
+
+.btn.danger {
+  background: none; color: var(--port); border: 1px solid #4A2029;
+  font-weight: 600; padding: 10px 16px; font-size: 15px;
+}
+.btn.danger:hover { background: #21121A; }
+
+.btnrow { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 20px; align-items: center; }
+
+/* =================================================================
+   THE VERDICT. The hero of the business dashboard.
+
+   The answer this product exists to give is a verdict and a price, so
+   the verdict is set large in the condensed cut and the price is set
+   in the mono cut, and the route between origin and plant is drawn as
+   a line, because a route line is the most characteristic object in
+   this subject's world and nothing else on the page was drawing it.
+   ================================================================= */
+
+.verdict {
+  position: relative; overflow: hidden;
+  background: linear-gradient(150deg, var(--shoal) 0%, var(--shelf) 62%);
+  border: 1px solid var(--drying);
+  border-top: 3px solid var(--sounding);
+  padding: 30px 32px 26px; margin-bottom: 26px;
+}
+.verdict.fix_now { border-top-color: var(--starboard); }
+.verdict.wait    { border-top-color: var(--buoy); }
+.verdict.split   { border-top-color: var(--shallows); }
+
+.verdict-top { display: flex; justify-content: space-between; gap: 34px; flex-wrap: wrap; align-items: flex-start; }
+
+.verdict h3 {
+  font-family: "Barlow Condensed", sans-serif; font-weight: 700;
+  font-size: clamp(38px, 5.6vw, 62px); line-height: .95; margin: 0;
+  letter-spacing: -0.012em;
+}
+.verdict.fix_now h3 { color: var(--starboard); }
+.verdict.wait h3    { color: var(--buoy); }
+.verdict.split h3   { color: var(--shallows); }
+
+.verdict .why { margin: 12px 0 0; color: var(--chartwhite); font-size: 17px; max-width: 54ch; }
+
+.headline-price { text-align: right; white-space: nowrap; }
+.headline-price .amt {
+  display: block; font-size: clamp(32px, 4.6vw, 48px); font-weight: 500;
+  line-height: 1; color: var(--chartwhite);
+}
+.headline-price .unit { display: block; font-size: 14.5px; color: var(--sounding); margin-top: 7px; }
+.headline-price .inr {
+  display: block; font-size: 19px; color: var(--sounding); margin-top: 4px;
+  font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums;
+}
+
+/* The route, as a passage plan read down the page. The connector between two
+   nodes is a real line, solid for the sea leg and dotted for the inland one,
+   because those are two different kinds of movement with two different costs. */
+.route { margin: 26px 0 0; padding: 20px 0 0; border-top: 1px solid var(--drying); }
+.route ol { list-style: none; margin: 0; padding: 0; }
+.route .node {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 18px; font-weight: 600; color: var(--chartwhite);
+}
+.route .node::before {
+  content: ""; flex: none; width: 11px; height: 11px; border-radius: 50%;
+  border: 2px solid var(--sounding); background: var(--deep);
+}
+.route .node.dest::before { background: var(--starboard); border-color: var(--starboard); }
+.route .leg {
+  margin-left: 6px; padding: 7px 0 7px 21px; border-left: 2px dotted #2A5F7B;
+}
+.route .leg.sea { border-left: 2px solid var(--sounding); }
+.route .leg .len {
+  font-family: "IBM Plex Mono", monospace; font-size: 13.5px; color: var(--sounding);
+  font-variant-numeric: tabular-nums;
+}
+
+.drivers { margin: 20px 0 0; display: flex; gap: 9px; flex-wrap: wrap; padding: 0; list-style: none; }
+.chip {
+  background: var(--deep); border: 1px solid var(--drying);
+  padding: 5px 12px; font-size: 14px; color: var(--sounding);
+}
+
+/* One orchestrated moment, and only one. It answers the user pressing the
+   button, showing that the answer is new, and it is off for reduced motion. */
+@keyframes surface { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
+.verdict { animation: surface .34s cubic-bezier(.2,.7,.3,1) both; }
+
+/* =================================================================
+   RANKED OPTIONS, each with a draft scale.
+
+   The draft scale is where this design spends its one risk. It is a
+   ship's draft mark: the vessel's laden draft as the full column, the
+   binding limit as a labelled rule, and the waterline where the load
+   actually sits. It encodes load percentage, which is the number this
+   whole project exists to compute, and reading down the column is
+   exactly the comparison the user is making. It is aria-hidden and
+   every figure in it is also written in words beside it.
+   ================================================================= */
+
+.opt {
+  background: var(--shelf); border: var(--rule);
+  padding: 20px 24px; margin-bottom: 12px;
+  display: grid; grid-template-columns: 76px minmax(0,1fr); gap: 26px; align-items: start;
+}
+.opt.best { border-color: #2C6B54; background: linear-gradient(160deg, #0D2A24 0%, var(--shelf) 55%); }
+@media (max-width: 620px) { .opt { grid-template-columns: 1fr; gap: 14px; } .draft { display: none; } }
+
+.draft { width: 76px; }
+.draft svg { display: block; width: 100%; height: auto; }
+
+.opt-top { display: flex; justify-content: space-between; gap: 22px; align-items: flex-start; flex-wrap: wrap; }
+.opt-name {
+  font-family: "Barlow Condensed", sans-serif; font-weight: 600;
+  font-size: 25px; line-height: 1.1; margin: 0; letter-spacing: 0;
+}
+.opt-sub { color: var(--sounding); font-size: 15px; margin: 6px 0 0; max-width: 58ch; }
+
+.rank {
+  display: inline-block; background: var(--starboard); color: var(--deep);
+  font-size: 12.5px; font-weight: 700; letter-spacing: .04em;
+  padding: 2px 9px; margin-right: 10px; vertical-align: 4px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+}
+
+.price { text-align: right; white-space: nowrap; }
+.price .amt { font-size: 30px; font-weight: 500; color: var(--chartwhite); display: block; line-height: 1; }
+.opt.best .price .amt { color: var(--starboard); }
+.price .unit { display: block; font-size: 13.5px; color: var(--faint); margin-top: 6px; }
+
+/* Two rows, not one. Facts read as a sentence across; state badges are a
+   different kind of thing and get their own line rather than interleaving. */
+.meta { display: flex; gap: 8px 28px; margin: 16px 0 0; padding: 0; flex-wrap: wrap; list-style: none;
+  font-size: 15px; color: var(--sounding); }
+.meta b { color: var(--chartwhite); font-weight: 500; }
+.flags { display: flex; gap: 9px; margin: 12px 0 0; padding: 0; flex-wrap: wrap; list-style: none; }
+
+.flag-cube {
+  background: #33280E; color: var(--buoy); border: 1px solid #5A4718;
+  padding: 2px 10px; font-weight: 600; font-size: 13.5px;
+}
+
+/* Disclosure. */
+details.bd { margin-top: 16px; border-top: 1px solid var(--drying); padding-top: 12px; }
+details.bd summary {
+  color: var(--shallows); font-size: 15.5px; cursor: pointer; padding: 4px 0;
+  font-weight: 600; list-style-position: outside;
+}
+details.bd summary:hover { color: #96DAF5; }
+
+.bdrow {
+  display: flex; justify-content: space-between; gap: 20px; font-size: 15px;
+  padding: 7px 0; color: var(--sounding); border-bottom: 1px solid #14303F;
+}
+.bdrow b { color: var(--chartwhite); white-space: nowrap; font-weight: 500; }
+.bdrow.total {
+  border-bottom: 0; border-top: 2px solid var(--drying); margin-top: 8px;
+  padding-top: 11px; color: var(--chartwhite); font-weight: 600; font-size: 16.5px;
+}
+.assume { font-size: 14px; color: var(--buoy); margin-top: 13px; line-height: 1.5; max-width: var(--measure); }
+
+/* -------------------------------------------------------- rejections */
+
+.rej {
+  background: #180E12; border: 1px solid #40222A; border-left: 3px solid var(--port);
+  padding: 16px 20px; margin-bottom: 11px;
+}
+.rej-h { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+.rej-h b { color: #FFB2AA; font-size: 17px; font-weight: 600; }
+.tag {
+  background: #40222A; color: var(--port); padding: 3px 10px;
+  font-size: 13px; font-weight: 600; white-space: nowrap;
+}
+.rej p { margin: 9px 0 0; font-size: 15px; color: #D6BDBF; max-width: var(--measure); }
+.rej .cite { color: #96777C; }
+
+/* ---------------------------------------------------- notices, states */
+
+.warnbox, .errbox, .note, .err, .done, .decl {
+  padding: 16px 20px; margin-bottom: 18px; font-size: 15.5px;
+  border-left: 3px solid; max-width: 88ch;
+}
+.warnbox, .note { background: #241C0C; border-color: var(--buoy); color: #F0DDAE; }
+.warnbox b, .note b { color: var(--buoy); }
+.errbox, .err     { background: #21100F; border-color: var(--port); color: #F4C9C4; }
+.errbox b, .err b { color: var(--port); }
+.done             { background: #0B2A20; border-color: var(--starboard); color: #BFEBD8; }
+.done b           { color: var(--starboard); }
+.decl             { background: #0D2A24; border-color: var(--starboard); color: #C2E2D5;
+                    margin: 14px 0 0; font-size: 15px; }
+.decl b           { color: var(--starboard); }
+
+/* The advisory. Magenta, and only ever this. */
+.advisory { background: #221029; border-left: 3px solid var(--overprint); color: #EBD0F7;
+  padding: 16px 20px; margin-bottom: 18px; font-size: 15.5px; max-width: 88ch; }
+.advisory b { color: var(--overprint); }
+
+.empty {
+  color: var(--sounding); padding: 52px 30px; text-align: center; font-size: 16px;
+  background: var(--shelf); border: 1px dashed var(--drying); max-width: 70ch;
+}
+
+/* --------------------------------------------------------- provenance */
+
+.prov {
+  display: inline-block; font-size: 12.5px; font-weight: 600; letter-spacing: .01em;
+  padding: 2px 9px; border: 1px solid; margin-left: 8px; white-space: nowrap;
+  font-family: "Barlow Semi Condensed", sans-serif;
+}
+.prov.declared  { background: #0D2A24; color: var(--starboard); border-color: #235943; }
+.prov.assumed   { background: #241C0C; color: var(--buoy);      border-color: #55441A; }
+.prov.published { background: #0F2632; color: var(--shallows);  border-color: #23506A; }
+
+/* Weather band. Never colour alone: the word is inside the badge. */
+.wx {
+  display: inline-block; font-size: 13.5px; font-weight: 600;
+  padding: 2px 10px; border: 1px solid; white-space: nowrap;
+}
+.wx.clear     { background: #0D2A24; color: var(--starboard); border-color: #235943; }
+.wx.caution   { background: #241C0C; color: var(--buoy);      border-color: #55441A; }
+.wx.disrupted { background: #221029; color: var(--overprint); border-color: #4A2559; }
+.wx.unknown   { background: var(--shoal); color: var(--sounding); border-color: var(--drying); }
+
+/* ------------------------------------------------------------- lists */
+
+.skill-list, ol.plain, ol.days, .facts { list-style: none; padding: 0; margin: 0; }
+.skill-item, ol.plain > li, ol.days > li { border-top: 1px solid #14303F; padding: 15px 0; }
+.skill-item:first-child, ol.plain > li:first-child, ol.days > li:first-child { border-top: 0; }
+.skill-head, .day-h { font-weight: 600; font-size: 17px; margin: 0 0 6px; }
+.skill-facts { display: flex; gap: 10px 26px; flex-wrap: wrap; font-size: 15px;
+  color: var(--sounding); margin: 0; padding: 0; list-style: none; }
+.day-b, .dayline { margin: 5px 0 0; font-size: 14.5px; color: var(--sounding); max-width: var(--measure); }
+
+.facts li {
+  display: flex; justify-content: space-between; gap: 20px; padding: 9px 0;
+  border-bottom: 1px solid #14303F; font-size: 15.5px; color: var(--sounding);
+}
+.facts li:last-child { border-bottom: 0; }
+.facts b { color: var(--chartwhite); text-align: right; font-weight: 500; }
+
+.neg { color: var(--port); font-weight: 600; }
+.pos { color: var(--starboard); font-weight: 600; }
+.ok  { color: var(--starboard); font-weight: 600; }
+.no  { color: var(--port); font-weight: 600; }
+.mid { color: var(--buoy); font-weight: 600; }
+
+/* ------------------------------------------------------------- charts */
+
+figure { margin: 0; position: relative; }
+
+/* Chart hover readout. A line chart on a screen should answer "what was it on
+   that day", because reading a value off a grid line is guesswork. */
+.tip {
+  position: absolute; pointer-events: none; z-index: 5;
+  background: var(--shoal); border: 1px solid var(--drying);
+  padding: 7px 11px; min-width: 120px;
+}
+.tip-d { display: block; font-size: 13px; color: var(--sounding); }
+.tip-v {
+  display: block; font-family: "IBM Plex Mono", monospace; font-size: 19px;
+  color: var(--chartwhite); font-variant-numeric: tabular-nums; margin-top: 1px;
+}
+figcaption { margin-top: 14px; font-size: 15px; color: var(--sounding); max-width: var(--measure); }
+figcaption b { color: var(--chartwhite); font-family: "IBM Plex Mono", monospace;
+  font-variant-numeric: tabular-nums; font-weight: 500; }
+/* Height follows width from the viewBox. Pinning the height instead letterboxes
+   the drawing inside its own box and throws away a fifth of the plot area. */
+svg.chart { width: 100%; height: auto; display: block; background: var(--deep);
+  border: 1px solid var(--drying); }
+
+/* ------------------------------------------------- port cards and panels */
+
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px,1fr)); gap: 14px; }
+.pcard { background: var(--shelf); border: var(--rule); padding: 20px; }
+.pcard h3 { font-family: "Barlow Condensed", sans-serif; font-size: 23px; margin: 0 0 2px; }
+.prow { display: flex; justify-content: space-between; gap: 16px; font-size: 15px;
+  padding: 6px 0; color: var(--sounding); border-bottom: 1px solid #14303F; }
+.prow:last-of-type { border-bottom: 0; }
+.prow b { color: var(--chartwhite); font-family: "IBM Plex Mono", monospace;
+  font-variant-numeric: tabular-nums; font-weight: 400; }
+
+.portsec { background: var(--shelf); border: var(--rule); padding: 24px; margin-bottom: 16px; }
+.portsec h3 { font-family: "Barlow Condensed", sans-serif; font-size: 26px; margin: 0 0 3px;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+/* Nothing in here is a headline, so nothing in here runs past a readable measure. */
+.portsec p, .portsec li { max-width: var(--measure); }
+
+/* --------------------------------------------------------------- badge */
+
+.badge {
+  display: inline-block; padding: 7px 14px; font-size: 14.5px; font-weight: 600;
+  border: 1px solid var(--drying); background: var(--shelf); color: var(--sounding);
+}
+.badge.on  { background: #0D2A24; color: var(--starboard); border-color: #235943; }
+.badge.off { background: #241C0C; color: var(--buoy);      border-color: #55441A; }
+
+/* The operator dashboard is one column of work, done top to bottom, so its main
+   column is held to a comfortable reading and form-filling width rather than
+   stretched across a desktop. */
+body.single main { max-width: 880px; margin-inline: auto; }
+body.single .titleblock-inner { max-width: 880px; margin-inline: auto; }
+body.single .badge { margin-top: 18px; }
+
+/* An input's width should tell you roughly how much to type into it. A field for
+   a berth draft in metres has no business being nine hundred pixels wide. The
+   console's sidebar is already narrow, so this is scoped to the operator page. */
+body.single input[type=number],
+body.single input[type=date]  { max-width: 250px; }
+body.single input[type=text]  { max-width: 560px; }
+body.single input[type=password] { max-width: 420px; }
+body.single select { max-width: 460px; }
+body.single #demand select { max-width: 320px; }
+
+[hidden] { display: none !important; }
+
+/* ---------------------------------------------------------------- print */
+
+@media print {
+  nav, form, .skip, .btnrow { display: none; }
+  body { background: #fff; color: #000; background-image: none; }
+  .card, .opt, .rej, .portsec, .verdict, fieldset { border-color: #999; background: #fff; color: #000; }
+  .verdict h3, .price .amt, .headline-price .amt { color: #000; }
+  a { color: #000; }
+}

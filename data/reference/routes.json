@@ -1,0 +1,18 @@
+{
+  "_note": "Distances are approximate great-circle-plus-routing estimates in nautical miles. VERIFY with a distance table before the finale.",
+  "_cargo_note": "Cargo lists per origin are ASSUMPTION - verify against actual trade flows before the finale. iron_ore, manganese_ore, limestone and steel_scrap were added to broaden the system beyond coal into other heavy dry bulk and break bulk cargoes SAIL sources internationally.",
+  "origins": [
+    {"code": "AU", "name": "Australia (Queensland / Hay Point)", "cargo": ["coking_coal", "thermal_coal", "iron_ore", "manganese_ore"], "load_rate_tpd": 45000, "load_port_max_draft_m": 18.5},
+    {"code": "US", "name": "United States (Hampton Roads)", "cargo": ["coking_coal", "steel_scrap"], "load_rate_tpd": 35000, "load_port_max_draft_m": 15.0},
+    {"code": "MZ", "name": "Mozambique (Beira / Nacala)", "cargo": ["coking_coal"], "load_rate_tpd": 20000, "load_port_max_draft_m": 12.0},
+    {"code": "RU", "name": "Russia (Far East)", "cargo": ["coking_coal", "thermal_coal", "iron_ore"], "load_rate_tpd": 25000, "load_port_max_draft_m": 15.5},
+    {"code": "ID", "name": "Indonesia (Kalimantan)", "cargo": ["thermal_coal", "limestone"], "load_rate_tpd": 30000, "load_port_max_draft_m": 14.0}
+  ],
+  "distances_nm": {
+    "AU": {"INPRT": 5200, "INDAH": 5250, "INGGV": 5050, "INVTZ": 5060, "INGPR": 5150, "INHAL": 5400, "INSAG": 5380},
+    "US": {"INPRT": 9200, "INDAH": 9250, "INGGV": 9050, "INVTZ": 9060, "INGPR": 9150, "INHAL": 9400, "INSAG": 9380},
+    "MZ": {"INPRT": 4300, "INDAH": 4350, "INGGV": 4150, "INVTZ": 4160, "INGPR": 4250, "INHAL": 4500, "INSAG": 4480},
+    "RU": {"INPRT": 4900, "INDAH": 4950, "INGGV": 4750, "INVTZ": 4760, "INGPR": 4850, "INHAL": 5100, "INSAG": 5080},
+    "ID": {"INPRT": 2600, "INDAH": 2650, "INGGV": 2450, "INVTZ": 2460, "INGPR": 2550, "INHAL": 2800, "INSAG": 2780}
+  }
+}

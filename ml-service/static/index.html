@@ -1,0 +1,829 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Freight Charter Decision Console</title>
+<link rel="stylesheet" href="/static/app.css">
+</head><body>
+
+<a class="skip" href="#main">Skip to main content</a>
+
+<!-- The header is built as a hydrographic chart's title block. A chart states
+     what it is, what its units are, and when it was last corrected, because a
+     mariner will not trust a depth without knowing those three things. A buyer
+     should not trust a cost without them either. -->
+<header class="titleblock">
+  <div class="titleblock-inner">
+    <p class="chartno">Problem statement 26006. Ministry of Steel, SAIL.</p>
+    <h1>Freight Charter Decision Console</h1>
+    <p class="strap">Bulk cargo from overseas to the East Coast of India. Say what you
+      need landed and by when. The system picks the ship, picks the port, and prices
+      the tonne at the plant gate.</p>
+    <ul class="blocknotes">
+      <li>Depths and drafts<span class="v">metres</span></li>
+      <li>Costs<span class="v">US dollars and rupees, per tonne delivered</span></li>
+      <li>Rate data<span class="v" id="src" role="status">loading</span></li>
+    </ul>
+  </div>
+</header>
+
+<nav class="sheets" aria-label="Screens">
+  <button type="button" class="tabbtn" data-page="0" aria-current="page">Decision console</button>
+  <button type="button" class="tabbtn" data-page="1">Market and forecast</button>
+  <button type="button" class="tabbtn" data-page="2">Port intelligence</button>
+  <button type="button" class="tabbtn" data-page="3">Capacity and weather</button>
+  <a class="away" href="/port">Port operator sign in</a>
+</nav>
+
+<main id="main" tabindex="-1">
+
+<!-- ============ SCREEN 0. DECISION CONSOLE ============ -->
+<section class="page" id="p0" aria-label="Decision Console"><div class="grid">
+  <div class="card">
+    <h2 class="card-title">Cargo requirement</h2>
+    <div class="sub" style="margin-bottom:2px">Five inputs. Everything else is defaulted and editable.</div>
+    <form id="cargoform">
+      <label for="origin">Origin</label>
+      <select id="origin"></select>
+      <p class="hint" id="originhint">Cargo choices update to match what this origin supplies.</p>
+
+      <label for="cargo">Cargo type</label>
+      <select id="cargo" aria-describedby="cargohint"></select>
+      <p class="hint" id="cargohint"></p>
+
+      <label for="qty">Quantity (tonnes)</label>
+      <!-- STEP AND MIN MUST AGREE WITH THE DEFAULT VALUE. A number input is valid
+           only at min plus a whole multiple of step. This field used to read
+           min 1000 with step 5000, which makes the nearest valid values 71000 and
+           76000 and therefore makes its OWN DEFAULT of 75000 invalid. The browser
+           then blocked the form submit, no submit event fired at all, and pressing
+           Get recommendation did nothing until the user happened to change the
+           quantity. Changing either number here means rechecking the default. -->
+      <input id="qty" type="number" value="75000" step="1000" min="1000" required
+        aria-describedby="qtyhint">
+      <p class="hint" id="qtyhint">Total parcel size required at the plant.</p>
+
+      <label for="plant">Destination plant</label>
+      <select id="plant"><option value="">Let the system choose the port</option></select>
+
+      <label for="hz">Decision horizon (days)</label>
+      <select id="hz"><option>7</option><option>14</option><option selected>30</option>
+        <option>60</option><option>90</option></select>
+
+      <button class="go" id="runbtn" type="submit">Get recommendation</button>
+    </form>
+  </div>
+
+  <div id="out" aria-live="polite" aria-busy="false">
+    <div class="empty">Enter a cargo requirement and select <b>Get recommendation</b>.
+      The system will rank every vessel class and discharge port by landed cost per tonne.</div>
+  </div>
+</div></section>
+
+<!-- ============ SCREEN 1. MARKET AND FORECAST ============ -->
+<section class="page" id="p1" hidden aria-label="Market and Forecast">
+  <div id="skillwarn"></div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px">
+      <div><h2 class="card-title">Rate history</h2><div class="sub">Last 24 months</div></div>
+      <div style="min-width:200px">
+        <label for="ik" style="margin-top:0">Vessel class index</label>
+        <select id="ik">
+          <option value="BCI">Capesize (BCI)</option><option value="BPI">Panamax (BPI)</option>
+          <option value="BSI">Supramax (BSI)</option><option value="BHSI">Handysize (BHSI)</option>
+        </select>
+      </div>
+    </div>
+    <figure id="chart" style="margin-top:14px" aria-live="polite"></figure>
+  </div>
+
+  <h2>Forecast honesty panel</h2>
+  <div class="card">
+    <p style="margin:0 0 14px;color:var(--dim);font-size:13.5px">Skill score is
+    <b style="color:var(--ink)">1 &minus; (model error / naive error)</b>, where naive means
+    assuming tomorrow's rate equals today's. Positive means the model beats doing nothing.
+    Zero or below means it does not, and we say so rather than hide it.</p>
+    <ul class="skill-list" id="skillbody"></ul>
+  </div>
+</section>
+
+<!-- ============ SCREEN 2. PORT INTELLIGENCE ============ -->
+<section class="page" id="p2" hidden aria-label="Port Intelligence">
+  <div class="warnbox"><b>Every value below carries a source citation.</b>
+  Values marked ASSUMPTION are unverified placeholders and must be confirmed with the
+  port authority before this system is used for a real decision.</div>
+  <div class="pgrid" id="ports"></div>
+</section>
+
+<!-- ============ SCREEN 3. PORT CAPACITY AND WEATHER ============ -->
+<section class="page" id="p3" hidden aria-label="Port Capacity and Weather">
+  <div class="warnbox"><b>Two live inputs feed the ranking on the Decision Console.</b>
+  The first is what each port operator declares through their own password protected
+  dashboard, about free area, availability, accepted vessel classes and cargo demand.
+  The second is the weather forecast at each quay and each approach anchorage.
+  Everything an operator declares is dated and attributed. It is not a published port
+  authority figure, and this page never pretends otherwise.</div>
+  <div class="btnrow" style="margin:0 0 22px">
+    <button type="button" class="btn quiet" id="wxrefresh">Refresh every forecast now</button>
+  </div>
+  <div id="portlive" aria-live="polite">
+    <div class="empty">Loading declared capacity and weather.</div>
+  </div>
+</section>
+
+</main>
+
+<script>
+"use strict";
+/* TWO HAZARDS BIT THIS FILE. BOTH ARE FIXED HERE. DO NOT REINTRODUCE EITHER.
+
+   1. Implicit window.<id> globals. Several element ids collide with built-in
+      Window properties. window.origin is a read-only string, so an implicit
+      `origin.value` silently yields undefined and the request loses its origin
+      field. Every element is therefore fetched explicitly with getElementById.
+
+   2. Inline on* handlers. An inline handler is compiled with the form owner in
+      its scope chain, and a form exposes its controls by id. So inside
+      `<form onsubmit="run()">` the name `run` resolved to `<button id="run">`
+      rather than to the function, and calling an element throws. The click did
+      nothing and sent no request. All handlers are now attached with
+      addEventListener, where only real lexical scope applies. */
+const $ = id => document.getElementById(id);
+const API = location.origin;
+let REF = null, HIST = {}, SKILL = null, DECL = null, WX = null;
+
+/* Cargo names and stowage factors come from data/reference/cargo_types.json via
+   /ml/reference. Nothing about cargo is hard coded in this page. */
+const cargoRec = code => (REF && REF.cargo_types || []).find(c => c.code === code);
+const prettyCargo = code => {
+  const c = cargoRec(code);
+  return c ? c.name : String(code).replace(/_/g, " ");
+};
+
+async function getJSON(url, opts) {
+  const r = await fetch(url, opts);
+  let d = null;
+  try { d = await r.json(); } catch (e) { d = null; }
+  if (!r.ok) throw new Error(readError(d, r.status));
+  return d;
+}
+
+/* FastAPI returns `detail` as a string for our own 400s, but as an array of
+   objects for pydantic 422s. Rendering that array directly prints [object Object],
+   which is what a broken request used to look like on screen. */
+function readError(d, status) {
+  if (!d) return `Request failed with status ${status}.`;
+  if (typeof d.detail === "string") return d.detail;
+  if (Array.isArray(d.detail)) {
+    return d.detail.map(e => {
+      const field = Array.isArray(e.loc) ? e.loc[e.loc.length - 1] : "input";
+      return `${field}: ${e.msg}`;
+    }).join(". ") + ".";
+  }
+  return `Request failed with status ${status}.`;
+}
+
+/* All event wiring lives here, attached before any network call, so the interface
+   is responsive even if the service is slow or down. */
+function wireEvents() {
+  document.querySelectorAll("nav .tabbtn").forEach(btn => {
+    btn.addEventListener("click", () => tab(Number(btn.dataset.page), btn));
+  });
+  $("cargoform").addEventListener("submit", ev => { ev.preventDefault(); run(); });
+  $("origin").addEventListener("change", syncCargo);
+  $("cargo").addEventListener("change", showStowage);
+  $("ik").addEventListener("change", drawChart);
+  $("hz").addEventListener("change", () => { if (!$("p1").hidden) drawChart(); });
+  $("wxrefresh").addEventListener("click", () => loadPortLive(true));
+}
+
+async function boot() {
+  wireEvents();
+  try {
+    const h = await getJSON(API + "/ml/health");
+    const b = $("src");
+    b.className = "v " + (h.is_real_data ? "real" : "scaffold");
+    b.textContent = h.is_real_data
+      ? `real market data, ${Number(h.rows).toLocaleString("en-IN")} rows, ${h.date_from} to ${h.date_to}`
+      : `scaffolding, not a real market, ${Number(h.rows).toLocaleString("en-IN")} rows`;
+
+    REF = await getJSON(API + "/ml/reference");
+    const o = $("origin");
+    REF.origins.forEach(x => o.add(new Option(x.name, x.code)));
+    const p = $("plant");
+    REF.plants.forEach(x => p.add(new Option(x, x)));
+    p.value = "Durgapur";
+    syncCargo();
+
+    SKILL = await getJSON(API + "/ml/skill");
+    renderSkill();
+    renderPorts();
+    drawChart();
+    loadPortLive(false);
+  } catch (e) {
+    $("out").innerHTML = `<div class="errbox"><b>Could not load reference data.</b>
+      ${escapeHTML(e.message)} Confirm the service is running, then reload this page.</div>`;
+  }
+}
+
+/* Only offer cargo types the selected origin actually supplies. This removes a whole
+   class of confusing "origin does not supply cargo" errors before it can happen. */
+function syncCargo() {
+  if (!REF) return;
+  const code = $("origin").value;
+  const origin = REF.origins.find(o => o.code === code);
+  const sel = $("cargo");
+  const previous = sel.value;
+  sel.innerHTML = "";
+  if (!origin) return;
+  origin.cargo.forEach(c => sel.add(new Option(prettyCargo(c), c)));
+  if (origin.cargo.includes(previous)) sel.value = previous;
+  $("originhint").textContent =
+    `${origin.name} supplies ${origin.cargo.length} cargo type${origin.cargo.length === 1 ? "" : "s"} in this system.`;
+  showStowage();
+}
+
+/* Explain, before the user even asks for a recommendation, why this cargo will
+   behave the way it does. Stowage factor is the least intuitive number here. */
+function showStowage() {
+  const c = cargoRec($("cargo").value);
+  const el = $("cargohint");
+  if (!c) { el.textContent = ""; return; }
+  el.textContent =
+    `Stowage factor ${c.stowage_factor_m3_per_t} m³ per tonne. ` +
+    (c.stowage_factor_m3_per_t < 0.9
+      ? "Dense, so it weighs out and leaves hold space empty."
+      : "Bulky, so it may cube out and fill the holds before reaching deadweight.") +
+    ` Handling rate ${Number(c.handling_rate_multiplier).toFixed(2)} times the port norm.`;
+}
+
+function tab(i, el) {
+  document.querySelectorAll(".page").forEach((p, j) => { p.hidden = (i !== j); });
+  document.querySelectorAll("nav button").forEach(b => b.removeAttribute("aria-current"));
+  el.setAttribute("aria-current", "page");
+  $("main").focus();
+}
+
+async function run() {
+  const btn = $("runbtn"), out = $("out");
+  const origin = $("origin").value;
+  const cargo = $("cargo").value;
+  const qty = Number($("qty").value);
+
+  if (!origin || !cargo) {
+    out.innerHTML = `<div class="errbox"><b>Reference data is not loaded yet.</b>
+      Wait a moment for the origin and cargo lists to populate, then try again.</div>`;
+    return;
+  }
+  if (!(qty > 0)) {
+    out.innerHTML = `<div class="errbox"><b>Enter a quantity greater than zero.</b></div>`;
+    $("qty").focus();
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Computing…";
+  out.setAttribute("aria-busy", "true");
+  out.innerHTML = `<div class="empty" role="status">Evaluating every vessel class against
+    every East Coast discharge port…</div>`;
+
+  try {
+    const d = await getJSON(API + "/ml/recommend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        cargo_type: cargo,
+        quantity_tonnes: qty,
+        origin: origin,
+        destination_plant: $("plant").value || null,
+        horizon_days: Number($("hz").value)
+      })
+    });
+    render(d);
+  } catch (e) {
+    out.innerHTML = `<div class="errbox"><b>No recommendation was produced.</b>
+      ${escapeHTML(e.message)}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Get recommendation";
+    out.setAttribute("aria-busy", "false");
+  }
+}
+
+const escapeHTML = s => String(s).replace(/[&<>"']/g,
+  c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+/* The pipeline assembles an option's reason from clauses, so it arrives in lower
+   case and without a full stop. It is a sentence by the time a person reads it. */
+const sentence = t => {
+  const s = String(t || "").trim();
+  if (!s) return "";
+  return s[0].toUpperCase() + s.slice(1) + (/[.!?]$/.test(s) ? "" : ".");
+};
+/* A count and its noun have to agree. "Waiting 1 days now" is the kind of thing a
+   judge notices immediately and it costs one function to never do again. */
+const plural = (n, one, many) => `${n} ${Number(n) === 1 ? one : (many || one + "s")}`;
+const money = n => "$" + Number(n).toFixed(2);
+const inr = n => "₹" + Math.round(Number(n)).toLocaleString("en-IN");
+const tonnes = n => Number(n).toLocaleString("en-IN");
+
+/* The draft scale. A ship's draft mark, drawn.
+
+   The column is the vessel's nominal capacity. The fill is what she can actually
+   load here, and the waterline sits where that lands. This is the one number the
+   whole project exists to compute, so it is the one thing drawn rather than
+   written. It is aria-hidden and every figure in it is written in words beside
+   it, so nothing in it is lost to a reader who does not see it. */
+function draftScale(o) {
+  const pct = Math.max(0, Math.min(100, Number(o.load_percentage) || 0));
+  const W = 76, H = 128, top = 24, bot = H - 18, colX = 26, colW = 38;
+  const span = bot - top;
+  const y = bot - span * pct / 100;
+  const full = pct >= 90;
+  const fill = full ? "#45CE9B" : "#E0AE3E";
+
+  // Draft marks up the side of the hull, the way they are painted on a real bow.
+  // Every quarter gets a long mark, every eighth a short one.
+  let marks = "";
+  for (let i = 0; i <= 8; i++) {
+    const my = bot - span * i / 8;
+    const long = i % 2 === 0;
+    marks += `<line x1="${colX - (long ? 10 : 5)}" y1="${my}" x2="${colX - 1}" y2="${my}"
+      stroke="${long ? "#3A6E88" : "#24556E"}" stroke-width="1"/>`;
+  }
+
+  return `<div class="draft"><svg viewBox="0 0 ${W} ${H}" aria-hidden="true" focusable="false">
+    <text x="${colX + colW / 2}" y="15" fill="#E4EFF4" font-size="15" font-weight="500"
+      font-family="IBM Plex Mono, monospace" text-anchor="middle">${pct.toFixed(0)}%</text>
+    ${marks}
+    <rect x="${colX}" y="${top}" width="${colW}" height="${span}"
+      fill="#06111A" stroke="#24556E" stroke-width="1"/>
+    <rect x="${colX + 1}" y="${y}" width="${colW - 2}" height="${bot - y - 1}" fill="${fill}" opacity=".9"/>
+    <line x1="${colX - 6}" y1="${y}" x2="${colX + colW + 6}" y2="${y}"
+      stroke="#E4EFF4" stroke-width="2"/>
+    <line x1="${colX - 3}" y1="${bot}" x2="${colX + colW + 3}" y2="${bot}"
+      stroke="#7FB2C8" stroke-width="2.5"/>
+  </svg></div>`;
+}
+
+/* The route, drawn as a passage plan.
+
+   A voyage is read down a page, not across one: origin, then the sea leg and its
+   distance, then the discharge port, then the inland leg, then the plant. Laying it
+   out vertically also survives a long port name, which the horizontal version did
+   not, and it reads correctly aloud in the same order. */
+function routeLine(o, plant) {
+  const rows = [];
+  rows.push(`<li class="node">${escapeHTML(o.origin)}</li>`);
+  rows.push(`<li class="leg sea"><span class="len">${tonnes(o.distance_nm)} nautical miles by sea</span></li>`);
+  rows.push(`<li class="node dest">${escapeHTML(o.discharge_port)}</li>`);
+  if (plant && o.inland_km) {
+    rows.push(`<li class="leg"><span class="len">${tonnes(o.inland_km)} km inland</span></li>`);
+    rows.push(`<li class="node">${escapeHTML(plant)}</li>`);
+  }
+  return `<div class="route"><ol aria-label="Route">${rows.join("")}</ol></div>`;
+}
+
+function render(d) {
+  const r = d.recommendation;
+  const best = d.options[0];
+  const plant = $("plant").value;
+
+  let h = `<section class="verdict ${escapeHTML(r.action)}" aria-label="Recommendation">
+    <div class="verdict-top">
+      <div>
+        <h3>${escapeHTML(r.headline)}</h3>
+        ${best ? `<p class="why"><b>${escapeHTML(best.vessel_class)}</b> to
+          <b>${escapeHTML(best.discharge_port)}</b>. ${escapeHTML(r.reason)}</p>`
+               : `<p class="why">${escapeHTML(r.reason)}</p>`}
+      </div>
+      ${best ? `<p class="headline-price">
+        <span class="amt">${money(best.landed_cost_usd_per_tonne)}</span>
+        <span class="unit">landed per tonne at the plant gate</span>
+        <span class="inr">${inr(best.landed_cost_inr_per_tonne)}</span>
+      </p>` : ""}
+    </div>
+    ${best ? routeLine(best, plant) : ""}
+    <ul class="drivers">
+      ${(r.drivers || []).map(x => `<li class="chip">${escapeHTML(x)}</li>`).join("")}
+      <li class="chip">${escapeHTML(r.confidence_label)}</li>
+    </ul></section>`;
+
+  if (d.arrival_window) {
+    h += `<p class="cite" style="margin:-12px 0 20px">${escapeHTML(d.arrival_window.note)}</p>`;
+  }
+  if (d.port_intelligence && d.port_intelligence.ports_with_declarations) {
+    h += `<div class="decl" style="margin:0 0 22px"><b>What the ports themselves say.</b>
+      ${escapeHTML(d.port_intelligence.headline)}
+      Demand sits beside the ranking and never inside it, because a port wanting a
+      cargo does not make that cargo cheaper to deliver there. The full picture is on
+      the capacity and weather sheet.</div>`;
+  }
+
+  if (!d.options.length) {
+    h += `<div class="empty">No feasible vessel and port combination was found.
+      Every candidate is listed below with the constraint that ruled it out.</div>`;
+  } else {
+    h += `<h2>Ranked by landed cost. ${d.options.length} feasible</h2>
+      <p class="lead">The column beside each option is a draft mark. The filled part is
+      how much of that ship this port can actually load. A voyage costs the same
+      whether she sails full or half full, so the empty part is money nobody gets back.</p>`;
+    d.options.forEach((o, i) => {
+      const b = o.cost_breakdown_usd_per_tonne, t = o.time_breakdown_days;
+      h += `<article class="opt ${i === 0 ? "best" : ""}">
+        ${draftScale(o)}
+        <div>
+        <div class="opt-top">
+          <div>
+            <h3 class="opt-name">${i === 0 ? '<span class="rank">Best</span>' : ""}${escapeHTML(o.vessel_class)}
+              to ${escapeHTML(o.discharge_port)}</h3>
+            <p class="opt-sub">${escapeHTML(sentence(o.reason))}</p>
+          </div>
+          <p class="price">
+            <span class="amt">${money(o.landed_cost_usd_per_tonne)}</span>
+            <span class="unit">per tonne delivered</span>
+            <span class="unit">${inr(o.landed_cost_inr_per_tonne)} per tonne</span>
+          </p>
+        </div>
+        <ul class="meta">
+          <li>Loads <b>${tonnes(o.deliverable_tonnes)} t</b> of
+            <b>${tonnes(o.nominal_capacity_tonnes)} t</b></li>
+          <li>That is <b>${o.load_percentage}%</b> of her</li>
+          <li>Voyage <b>${o.total_days} days</b></li>
+          <li>Hire <b>$${Number(o.tce_usd_per_day).toLocaleString("en-US")} a day</b></li>
+          ${o.demand_rank ? `<li>Operator demand rank <b>${o.demand_rank}</b></li>` : ""}
+        </ul>
+        <ul class="flags">
+          ${o.cubes_out ? `<li><span class="flag-cube">Cubes out</span></li>` : ""}
+          <li><span class="wx ${escapeHTML(o.weather_risk_band || "unknown")}">Weather
+            ${escapeHTML(o.weather_risk_band || "unknown")}${o.weather_delay_days
+              ? `, ${plural(o.weather_delay_days, "delay day")}`
+              : ""}</span></li>
+        </ul>
+        ${o.operator_declared ? `<div class="decl">
+          <b>Declared by the port operator.</b>
+          ${escapeHTML(o.declared_area_note || "This port has a live declaration on file")}.
+          ${o.declared_area && o.declared_area.availability_note
+            ? "Availability. " + escapeHTML(o.declared_area.availability_note) + "."
+            : ""}
+          ${o.declared_area && o.declared_area.alternatives
+            ? ` ${o.declared_area.alternatives} further area${o.declared_area.alternatives === 1 ? "" : "s"}
+                at this port also accept${o.declared_area.alternatives === 1 ? "s" : ""} this class.`
+            : ""}
+          ${o.demand_rank ? ` This operator ranks the cargo you asked for number
+            ${o.demand_rank} in their own demand list${o.indicative_price_inr_per_tonne
+              ? `, indicating ${inr(o.indicative_price_inr_per_tonne)} per tonne` : ""}.` : ""}
+          ${o.demand_note ? " " + escapeHTML(o.demand_note) : ""}
+        </div>` : ""}
+        ${o.weather_delay_days ? `<div class="advisory" style="margin:14px 0 0">
+          <b>Weather advisory.</b> ${escapeHTML(o.weather_headline)}</div>` : ""}
+        <details class="bd">
+          <summary>Where the money and the days go</summary>
+          <div class="bdrow"><span>Freight, hire plus ballast allowance</span><b>${money(b.freight)}/t</b></div>
+          <div class="bdrow"><span>Expected demurrage, ${t.waiting} day wait</span><b>${money(b.expected_demurrage)}/t</b></div>
+          <div class="bdrow"><span>Weather delay, ${t.weather_delay || 0} forecast day${t.weather_delay === 1 ? "" : "s"} lost</span><b>${money(b.weather_delay || 0)}/t</b></div>
+          <div class="bdrow"><span>Port charges</span><b>${money(b.port_charges)}/t</b></div>
+          <div class="bdrow"><span>Lightering${o.lightered_tonnes ? `, ${tonnes(o.lightered_tonnes)} t` : ""}</span><b>${money(b.lightering)}/t</b></div>
+          <div class="bdrow"><span>Inland movement to plant${o.inland_km ? `, ${o.inland_km} km` : ""}</span><b>${money(b.inland)}/t</b></div>
+          <div class="bdrow total"><span>Landed cost per tonne</span><b>${money(o.landed_cost_usd_per_tonne)}/t</b></div>
+          <div class="bdrow" style="margin-top:14px"><span>Weight ceiling, from draft and deadweight</span>
+            <b>${tonnes(o.weight_capacity_tonnes)} t</b></div>
+          <div class="bdrow"><span>Volume ceiling, ${o.grain_capacity_m3
+            ? tonnes(o.grain_capacity_m3) + " m³ of hold at " + o.stowage_factor_m3_per_t + " m³/t"
+            : "not modelled"}</span>
+            <b>${o.volume_capacity_tonnes ? tonnes(o.volume_capacity_tonnes) + " t" : "n/a"}</b></div>
+          <div class="bdrow"><span>Which ceiling binds</span>
+            <b>${o.cubes_out ? "Volume, she cubes out" : "Weight, she weighs out"}</b></div>
+          <p class="assume">${o.cubes_out
+            ? `This cargo fills the holds before the ship reaches her deadweight, so
+               ${tonnes(o.nominal_capacity_tonnes - o.deliverable_tonnes)} t of carrying
+               capacity is unusable. Lightering cannot help, because hold space is fixed.`
+            : `Binding constraint is the ${escapeHTML(o.binding_constraint)} draft of
+               ${o.binding_draft_m} m against a vessel laden draft of
+               ${o.vessel_laden_draft_m} m.`}
+            Handling runs at ${Number(o.cargo_handling_multiplier).toFixed(2)} times the port norm for this cargo.
+            Cost figures use editable assumptions from cost_assumptions.json, and stowage
+            figures from cargo_types.json.</p>
+          ${provenanceList(o.provenance)}
+        </details>
+        </div>
+      </article>`;
+    });
+  }
+
+  if (d.rejected.length) {
+    h += `<h2>Ruled out. ${d.rejected.length} combinations</h2>
+      <p class="lead">Shown on purpose. Knowing what the system refused, and on whose
+      authority, is what makes the recommendation above worth trusting.</p>`;
+    d.rejected.slice(0, 10).forEach(x => {
+      h += `<article class="rej">
+        <div class="rej-h">
+          <b>${escapeHTML(x.vessel_class)} to ${escapeHTML(x.discharge_port)}</b>
+          <span class="tag">${escapeHTML(x.failed_constraint)}</span>
+        </div>
+        <p>${escapeHTML(x.explanation)}</p>
+        <p class="cite">Source. ${escapeHTML(x.source_citation)}</p>
+      </article>`;
+    });
+  }
+  $("out").innerHTML = h;
+}
+
+/* Every figure the cost model reads carries one of three provenance labels, and
+   the buyer sees which. PUBLISHED came from a cited source. OPERATOR DECLARED was
+   entered by the operator of that port, dated and attributed. ASSUMPTION is our own
+   placeholder and is still unverified. Showing which is which is the whole reason
+   an operator declaration is worth collecting. */
+const FIELD_NAMES = {
+  discharge_rate_tonnes_per_day: "Discharge rate, tonnes a day",
+  typical_wait_days: "Typical wait for a berth, days",
+  port_charge_usd_per_tonne: "Port charges, dollars a tonne",
+  lightering_cost_usd_per_tonne: "Lightering, dollars a tonne",
+  max_draft_m: "Maximum draft, metres"
+};
+
+const provClass = src => src === "OPERATOR DECLARED" ? "declared"
+                       : src === "PUBLISHED" ? "published" : "assumed";
+
+function provenanceList(prov) {
+  if (!prov) return "";
+  const keys = Object.keys(prov);
+  if (!keys.length) return "";
+  const declared = keys.filter(k => prov[k].source === "OPERATOR DECLARED").length;
+  return `<div style="margin-top:16px;border-top:1px solid var(--drying);padding-top:14px">
+    <p class="cite" style="margin:0 0 10px">Where each figure came from.
+      ${declared} of ${keys.length} ${declared === 1 ? "was" : "were"} declared by the
+      operator of this port.</p>
+    <ol class="plain">${keys.map(k => `<li>
+      <span class="fig" style="font-size:16px;color:var(--chartwhite)">${prov[k].value}</span>
+      <span style="font-size:15px"> ${escapeHTML(FIELD_NAMES[k] || k)}</span>
+      <span class="prov ${provClass(prov[k].source)}">${escapeHTML(prov[k].source)}</span>
+      <p class="dayline">${escapeHTML(prov[k].citation)}</p></li>`).join("")}</ol>
+  </div>`;
+}
+
+/* ---- Capacity and weather. What the operators declared, and what the sky is
+        about to do about it. ---- */
+
+async function loadPortLive(refresh) {
+  const host = $("portlive"), btn = $("wxrefresh");
+  btn.disabled = true;
+  if (refresh) btn.textContent = "Fetching every forecast…";
+  try {
+    DECL = await getJSON(API + "/ml/ports/declarations");
+    WX = await getJSON(API + "/ml/weather" + (refresh ? "?refresh=true" : ""));
+    host.innerHTML = renderPortLive();
+  } catch (e) {
+    host.innerHTML = `<div class="errbox"><b>Declared capacity and weather could not be
+      loaded.</b> ${escapeHTML(e.message)}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Refresh every forecast now";
+  }
+}
+
+function renderPortLive() {
+  const wxByPort = {};
+  (WX.ports || []).forEach(w => { wxByPort[w.port_code] = w; });
+
+  let h = `<h2>Declared capacity. ${DECL.ports_declared} of ${DECL.ports_total} ports
+    have declared</h2>
+    <p class="lead">${escapeHTML(DECL.provenance_note)}</p>`;
+
+  if (WX.offline_mode) {
+    h += `<div class="warnbox"><b>Offline mode is on.</b> Every forecast below came from
+      the cache and no network call was made. Unset FREIGHT_WEATHER_OFFLINE and refresh
+      to fetch current ones.</div>`;
+  }
+
+  h += DECL.ports.map(pt => {
+    const w = wxByPort[pt.port_code] || {};
+    const adv = w.advisory || {};
+    const band = adv.risk_band || "unknown";
+    const fresh = (w.freshness && w.freshness.quay) || {};
+
+    let x = `<section class="portsec" aria-label="${escapeHTML(pt.port_name)}">
+      <h3>${escapeHTML(pt.port_name)}
+        <span class="wx ${escapeHTML(band)}">Weather ${escapeHTML(band)}</span></h3>
+      <p class="sub">${escapeHTML(pt.state || "")}, port code ${escapeHTML(pt.port_code)}</p>`;
+
+    x += `<h4>Weather advisory</h4>`;
+    if (adv.headline) {
+      x += `<p style="margin:0;font-size:15.5px">${escapeHTML(adv.headline)}</p>
+        <p style="margin:8px 0 0;font-size:15px;color:var(--sounding)">Expected weather delay
+          <b class="fig" style="color:var(--chartwhite)">${plural(adv.expected_weather_delay_days, "day")}</b>,
+          added to waiting time and priced as demurrage in every landed cost shown for
+          this port.</p>
+        <p class="cite">Forecast ${escapeHTML(fresh.source || "unknown")}${fresh.fetched_at
+          ? ", fetched " + escapeHTML(String(fresh.fetched_at).replace("T", " at ")) : ""}${fresh.stale
+          ? ". Stale. " + escapeHTML(fresh.note || "") : ""}</p>`;
+      const bad = ((w.quay && w.quay.days) || []).filter(d => !d.workable);
+      if (bad.length) {
+        x += `<ol class="plain">${bad.map(d => `<li>
+          <span class="fig" style="font-size:16px">${escapeHTML(d.date)}</span>
+          <span class="no" style="margin-left:8px">Not workable at the quay</span>
+          <p class="dayline">${escapeHTML(d.breaches.join(". "))}.</p></li>`).join("")}</ol>`;
+      }
+    } else {
+      x += `<p style="margin:0;font-size:15px;color:var(--sounding)">No forecast is cached
+        for this port, so no weather delay has been added to its costs. That is not a
+        claim that the weather is good. Select refresh every forecast now.</p>`;
+    }
+
+    if (!pt.has_declaration) {
+      x += `<h4>Operator declaration</h4>
+        <p style="margin:0;font-size:15px;color:var(--sounding)">The operator of this port
+        has not declared anything. Costs and limits shown for it come from our published
+        and assumed reference values only.</p></section>`;
+      return x;
+    }
+
+    x += `<h4>Declared by ${escapeHTML(pt.declared_by || "the port operator")} on
+      ${escapeHTML(String(pt.updated_at).slice(0, 10))}</h4>
+      <p style="margin:0;font-size:15px;color:var(--sounding)">
+        <b class="fig" style="color:var(--chartwhite)">${pt.area_count}</b> handling area${pt.area_count === 1 ? "" : "s"},
+        <b class="fig" style="color:var(--chartwhite)">${Number(pt.total_area_sq_m).toLocaleString("en-IN")}</b> square metres in total,
+        <b class="fig" style="color:var(--chartwhite)">${Number(pt.total_storage_tonnes).toLocaleString("en-IN")}</b> tonnes of declared storage.</p>`;
+
+    if (pt.areas.length) {
+      x += `<ol class="plain">${pt.areas.map(a => `<li>
+        <b style="font-size:17px">${escapeHTML(a.name || "Unnamed area")}</b>
+        <span class="prov declared">OPERATOR DECLARED</span>
+        <p class="dayline">${Number(a.area_sq_m || 0).toLocaleString("en-IN")} square metres.
+          ${a.storage_capacity_tonnes ? "Holds " + Number(a.storage_capacity_tonnes).toLocaleString("en-IN") + " tonnes. " : ""}
+          Available ${escapeHTML(a.available_from || "now")} to ${escapeHTML(a.available_to || "open ended")}.
+          Accepts ${a.accepts_vessel_classes.length ? escapeHTML(a.accepts_vessel_classes.join(", ")) : "no vessel class, so it offers nothing"}.
+          ${a.max_draft_m ? "Berth draft " + a.max_draft_m + " metres. " : ""}
+          ${a.discharge_rate_tonnes_per_day ? "Discharges " + Number(a.discharge_rate_tonnes_per_day).toLocaleString("en-IN") + " tonnes a day. " : ""}
+          ${a.current_wait_days !== null && a.current_wait_days !== undefined ? "Waiting " + plural(a.current_wait_days, "day") + " now. " : ""}
+          ${escapeHTML(a.notes || "")}</p></li>`).join("")}</ol>`;
+    }
+
+    if (pt.cargo_demand.length) {
+      x += `<h4>What this port most wants</h4>
+        <ol class="plain">${pt.cargo_demand.map(c => `<li>
+          <b style="font-size:17px">Rank
+            <span class="fig" style="color:var(--starboard)">${c.demand_rank}</span>.
+            ${escapeHTML(c.cargo_name)}</b>
+          <p class="dayline">
+            ${c.monthly_demand_tonnes ? Number(c.monthly_demand_tonnes).toLocaleString("en-IN") + " tonnes a month. " : ""}
+            ${c.indicative_price_inr_per_tonne ? "Indicative " + inr(c.indicative_price_inr_per_tonne) + " a tonne. " : ""}
+            ${escapeHTML(c.notes || "")}</p></li>`).join("")}</ol>
+        <p class="cite">This ranking is the operator's own statement of what they are short
+          of. It never enters a landed cost, because wanting a cargo does not make that
+          cargo cheaper to ship.</p>`;
+    }
+
+    if (pt.operator_notes) {
+      x += `<h4>Notes from the operator</h4>
+        <p style="margin:0;font-size:15.5px">${escapeHTML(pt.operator_notes)}</p>`;
+    }
+    return x + "</section>";
+  }).join("");
+
+  h += `<p class="cite">Weather from ${escapeHTML(WX.provider)} ${escapeHTML(WX.note)}</p>`;
+  return h;
+}
+
+function renderSkill() {
+  const rows = SKILL.rows;
+  $("skillbody").innerHTML = rows.map(r => `
+    <li class="skill-item">
+      <p class="skill-head">${escapeHTML(r.index_key)} at ${r.horizon_days} days.
+        <span class="${r.has_skill ? "pos" : "neg"}">${r.has_skill ? "Has skill" : "NO SKILL"}</span></p>
+      <ul class="skill-facts">
+        <li>Model error <b>${r.model_mae}</b></li>
+        <li>Naive error <b>${r.baseline_mae}</b></li>
+        <li>Skill score
+          <b class="${r.skill_score > 0 ? "pos" : "neg"}">${r.skill_score > 0 ? "+" : ""}${r.skill_score.toFixed(4)}</b></li>
+      </ul>
+    </li>`).join("");
+
+  const bad = rows.filter(r => !r.has_skill).length;
+  $("skillwarn").innerHTML = bad === rows.length
+    ? `<div class="warnbox"><b>No forecasting skill at any horizon on the current dataset.</b>
+       This is the correct result while running on scaffolding data, which is generated as a
+       near random walk and therefore contains no signal to find. The decision engine is
+       hard wired to refuse a wait recommendation whenever skill is absent, so the system
+       falls back to fix now and says why. Load real index history into
+       <code>data/raw/baltic_indices.csv</code> to obtain the real answer.</div>`
+    : `<div class="warnbox">${bad} of ${rows.length} horizons show no skill. The decision
+       engine will not recommend waiting at those horizons.</div>`;
+}
+
+/* Rate history and forecast.
+
+   One series, so there is no legend: the caption names it. The forecast cone is
+   coloured by whether the model has any demonstrated skill at this horizon, which
+   is the only thing about it a user needs to decide. Magenta is this system's
+   advisory colour, so a cone with no skill behind it is drawn in magenta and says
+   so in words. The caption repeats every number in the drawing, so the chart is
+   readable without seeing it. */
+async function drawChart() {
+  const k = $("ik").value;
+  try {
+    if (!HIST[k]) HIST[k] = await getJSON(`${API}/ml/history?index_key=${k}&days=504`);
+    const f = await getJSON(`${API}/ml/forecast?index_key=${k}&horizon_days=${$("hz").value}`);
+    const pts = HIST[k].points;
+    const W = 900, H = 300, L = 54, R = 14, T = 22, B = 34, FW = 96;
+    const vals = pts.map(p => p.value).concat([f.lower, f.upper, f.point]);
+    const mn = Math.min(...vals) * 0.96, mx = Math.max(...vals) * 1.04;
+    const n = pts.length;
+    const X = i => L + (i / (n - 1)) * (W - L - R - FW);
+    const Y = v => H - B - ((v - mn) / (mx - mn)) * (H - T - B);
+
+    const line = pts.map((p, i) => `${i ? "L" : "M"}${X(i).toFixed(1)},${Y(p.value).toFixed(1)}`).join("");
+    const x0 = X(n - 1), x1 = W - R;
+    const cone = `M${x0},${Y(f.current)} L${x1},${Y(f.upper)} L${x1},${Y(f.lower)} Z`;
+    const band = f.has_skill ? "#00A070" : "#B356D7";
+    const bandInk = f.has_skill ? "#45CE9B" : "#D97BFF";
+
+    let grid = "";
+    for (let i = 0; i <= 4; i++) {
+      const v = mn + (mx - mn) * i / 4, y = Y(v);
+      grid += `<line x1="${L}" y1="${y}" x2="${x1}" y2="${y}" stroke="#14303F" stroke-width="1"/>
+        <text x="${L - 9}" y="${y + 4}" fill="#55798C" font-size="12" text-anchor="end"
+          font-family="IBM Plex Mono, monospace">${Math.round(v)}</text>`;
+    }
+
+    $("chart").innerHTML = `
+      <svg class="chart" viewBox="0 0 ${W} ${H}" role="img" id="ratesvg"
+        aria-label="${escapeHTML(k)} rate history over two years, with a ${f.horizon_days} day forecast cone. The caption below states every value.">
+        ${grid}
+        <path d="${cone}" fill="${band}" opacity=".22"/>
+        <path d="${cone}" fill="none" stroke="${band}" stroke-width="1" opacity=".55"/>
+        <path d="${line}" fill="none" stroke="#6FC6E8" stroke-width="2"
+          stroke-linejoin="round" stroke-linecap="round"/>
+        <line x1="${x0}" y1="${T - 6}" x2="${x0}" y2="${H - B}" stroke="#2A5F7B" stroke-dasharray="3,4"/>
+        <line x1="${x0}" y1="${Y(f.current)}" x2="${x1}" y2="${Y(f.point)}"
+          stroke="${bandInk}" stroke-width="2" stroke-dasharray="6,4"/>
+        <circle cx="${x0}" cy="${Y(f.current)}" r="4" fill="#6FC6E8" stroke="#06111A" stroke-width="2"/>
+        <text x="${x1}" y="${T - 4}" fill="#7FB2C8" font-size="12" text-anchor="end">forecast, next ${f.horizon_days} days</text>
+        <text x="${L}" y="${H - 10}" fill="#55798C" font-size="12"
+          font-family="IBM Plex Mono, monospace">${pts[0].date}</text>
+        <text x="${x0}" y="${H - 10}" fill="#55798C" font-size="12" text-anchor="end"
+          font-family="IBM Plex Mono, monospace">${pts[n - 1].date}</text>
+        <g id="xhair" style="display:none" aria-hidden="true">
+          <line id="xhairline" y1="${T - 6}" y2="${H - B}" stroke="#7FB2C8" stroke-width="1"/>
+          <circle id="xhairdot" r="5" fill="#6FC6E8" stroke="#06111A" stroke-width="2"/>
+        </g>
+        <rect id="xhairhit" x="${L}" y="${T - 6}" width="${x0 - L}" height="${H - B - T + 6}"
+          fill="transparent" style="cursor:crosshair"/>
+      </svg>
+      <div id="tip" class="tip" hidden></div>
+      <figcaption>${escapeHTML(k)} stands at <b>${f.current}</b> today. In
+        ${f.horizon_days} days the model puts it at <b>${f.point}</b>, and is eighty
+        percent confident it lands between <b>${f.lower}</b> and <b>${f.upper}</b>.
+        ${f.note
+          ? `<span style="color:${bandInk}">${escapeHTML(f.note)}</span>`
+          : `Skill score ${f.skill_score > 0 ? "+" : ""}${f.skill_score}, so the cone is
+             drawn in the colour this system reserves for a figure you can lean on.`}</figcaption>`;
+
+    // Hover layer. A line chart on a screen should answer "what was it on that day",
+    // and reading a value off a grid line is guesswork.
+    const svg = $("ratesvg"), hit = $("xhairhit"), grp = $("xhair"),
+          hline = $("xhairline"), dot = $("xhairdot"), tip = $("tip");
+    const move = ev => {
+      const box = svg.getBoundingClientRect();
+      const sx = (ev.clientX - box.left) / box.width * W;
+      let i = Math.round((sx - L) / (X(n - 1) - L) * (n - 1));
+      i = Math.max(0, Math.min(n - 1, i));
+      const px = X(i), py = Y(pts[i].value);
+      grp.style.display = "";
+      hline.setAttribute("x1", px); hline.setAttribute("x2", px);
+      dot.setAttribute("cx", px); dot.setAttribute("cy", py);
+      tip.hidden = false;
+      tip.innerHTML = `<span class="tip-d">${escapeHTML(pts[i].date)}</span>
+        <span class="tip-v">${pts[i].value}</span>`;
+      const leftPx = px / W * box.width;
+      tip.style.left = Math.min(box.width - 130, Math.max(0, leftPx - 60)) + "px";
+      tip.style.top = (py / H * box.height - 52) + "px";
+    };
+    hit.addEventListener("pointermove", move);
+    hit.addEventListener("pointerleave", () => {
+      grp.style.display = "none"; tip.hidden = true;
+    });
+  } catch (e) {
+    $("chart").innerHTML = `<div class="errbox">The chart could not be drawn.
+      ${escapeHTML(e.message)}</div>`;
+  }
+}
+
+function renderPorts() {
+  $("ports").innerHTML = REF.ports.map(p => {
+    const c = p.citations || {};
+    const assumed = Object.values(c).filter(v => String(v).includes("ASSUMPTION")).length;
+    return `<article class="pcard">
+      <h3>${escapeHTML(p.name)}</h3>
+      <div class="sub" style="margin-bottom:10px">${escapeHTML(p.state)} &middot; ${escapeHTML(p.code)}</div>
+      <div class="prow"><span>Max draft</span><b>${p.max_draft_m} m</b></div>
+      <div class="prow"><span>Max length overall</span><b>${p.max_loa_m} m</b></div>
+      <div class="prow"><span>Max beam</span><b>${p.max_beam_m} m</b></div>
+      <div class="prow"><span>Max deadweight</span><b>${tonnes(p.max_dwt)}</b></div>
+      <div class="prow"><span>Lightering</span><b>${p.lightering_available ? "yes" : "no"}</b></div>
+      <div class="prow"><span>Typical wait</span><b>${p.typical_wait_days} days</b></div>
+      <p class="cite">Draft source: ${escapeHTML(c.max_draft_m || "none recorded")}</p>
+      ${assumed ? `<p class="assume">${assumed} field${assumed === 1 ? "" : "s"} still unverified assumptions</p>` : ""}
+    </article>`;
+  }).join("");
+}
+
+boot();
+</script></body></html>

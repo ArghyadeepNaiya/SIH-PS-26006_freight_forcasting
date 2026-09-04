@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freight Charter Decision System: Project Overview</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff;
+    --fg: #111111;
+    --muted: #444444;
+    --accent: #0b4f8a;
+    --border: #cccccc;
+    --code-bg: #f2f2f2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111111;
+      --fg: #f0f0f0;
+      --muted: #cccccc;
+      --accent: #7fb3e0;
+      --border: #444444;
+      --code-bg: #1e1e1e;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 18px;
+    line-height: 1.6;
+  }
+  a { color: var(--accent); }
+  a:focus, button:focus, input:focus {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .skip-link {
+    position: absolute;
+    left: -999px;
+    top: 0;
+    background: var(--accent);
+    color: #ffffff;
+    padding: 0.75em 1em;
+    z-index: 10;
+  }
+  .skip-link:focus {
+    left: 0;
+  }
+  header.page-header {
+    border-bottom: 1px solid var(--border);
+    padding: 1.5em 1em;
+  }
+  header.page-header h1 {
+    margin: 0 0 0.3em 0;
+    font-size: 1.8em;
+  }
+  header.page-header p {
+    margin: 0.2em 0;
+    color: var(--muted);
+  }
+  nav.toc {
+    border-bottom: 1px solid var(--border);
+    padding: 1em;
+  }
+  nav.toc h2 {
+    font-size: 1.1em;
+    margin-top: 0;
+  }
+  nav.toc ol {
+    padding-left: 1.4em;
+  }
+  main {
+    max-width: 44em;
+    margin: 0 auto;
+    padding: 0 1em 3em 1em;
+  }
+  section {
+    padding-top: 2em;
+    border-top: 1px solid var(--border);
+    margin-top: 2em;
+  }
+  section:first-of-type {
+    border-top: none;
+    margin-top: 0;
+  }
+  h2 {
+    font-size: 1.5em;
+  }
+  h3 {
+    font-size: 1.2em;
+    color: var(--accent);
+  }
+  ol, ul {
+    padding-left: 1.6em;
+  }
+  li {
+    margin-bottom: 0.6em;
+  }
+  code, pre {
+    font-family: "Courier New", monospace;
+    background: var(--code-bg);
+    font-size: 0.95em;
+  }
+  code {
+    padding: 0.1em 0.3em;
+  }
+  pre {
+    padding: 1em;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+  }
+  .status-box {
+    border: 2px solid var(--accent);
+    padding: 1em;
+    margin: 1em 0;
+  }
+  .status-box p:first-child {
+    margin-top: 0;
+  }
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 1.5em 1em;
+    color: var(--muted);
+    font-size: 0.95em;
+  }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to main content.</a>
+
+<header class="page-header">
+  <h1>Freight Charter Decision System</h1>
+  <p>Smart India Hackathon 2026. Problem statement SIH26006.</p>
+  <p>Ministry of Steel. Steel Authority of India Limited.</p>
+  <p>Development of an intelligent freight forecasting model for optimized vessel chartering and bulk cargo procurement from overseas to the East Coast of India.</p>
+</header>
+
+<nav class="toc" aria-label="Table of contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#overview">1. Project overview</a></li>
+    <li><a href="#insight">2. The central insight</a></li>
+    <li><a href="#questions">3. Four questions the product answers</a></li>
+    <li><a href="#users">4. Who the user is</a></li>
+    <li><a href="#problems">5. Pain points being solved</a></li>
+    <li><a href="#scope">6. Scope</a></li>
+    <li><a href="#screens">7. The three screens</a></li>
+    <li><a href="#architecture">8. System architecture</a></li>
+    <li><a href="#requirements">9. Requirements summary</a></li>
+    <li><a href="#roadmap">10. Build roadmap</a></li>
+    <li><a href="#status">11. Current honest status</a></li>
+    <li><a href="#running">12. How to run this project</a></li>
+  </ol>
+</nav>
+
+<main id="main">
+
+  <section id="overview">
+    <h2>1. Project overview</h2>
+    <p>The user does not tell the system which ship to use. The system tells the user.</p>
+    <p>A chartering manager enters a cargo requirement. The system returns a ranked set of vessel class and discharge port combinations, each priced as a delivered cost per tonne, together with a recommendation to fix now, wait, or split the cargo.</p>
+    <p>This page is generated from the project's own documentation files. PROJECT.md, ARCHITECTURE.md, REQUIREMENTS.md, ROADMAP.md and README.md. It is a reading companion to those files, not a replacement for them.</p>
+  </section>
+
+  <section id="insight">
+    <h2>2. The central insight</h2>
+    <p>A voyage costs approximately the same whether the ship sails full or half full. Therefore the number that matters is total voyage cost divided by the tonnes that can actually be discharged, not divided by the vessel's nominal capacity.</p>
+    <p>At a draft restricted port these two numbers diverge sharply. Public sources record Haldia with a maximum draft depth of about nine point one metres, accommodating Panamax vessels carrying only forty to fifty percent of capacity. Dhamra is recorded at about eighteen metres of draft and can take super Capesize vessels directly without lighterage.</p>
+    <p>So a Panamax discharging at Haldia may deliver roughly thirty thousand tonnes while costing close to what a full voyage costs. The freight rate looked cheap. The delivered cost was not.</p>
+    <p>This single divergence is the product's reason to exist.</p>
+  </section>
+
+  <section id="questions">
+    <h2>3. Four questions the product answers</h2>
+    <p>Everything on screen must serve one of these. If it does not, it gets removed.</p>
+    <ol>
+      <li>Which East Coast discharge port should this cargo come into.</li>
+      <li>Which vessel class should be chartered.</li>
+      <li>Should the charter be fixed today, or should the manager wait.</li>
+      <li>Should this be a single spot fix or part of a longer term contract.</li>
+    </ol>
+  </section>
+
+  <section id="users">
+    <h2>4. Who the user is</h2>
+    <p>A chartering or logistics manager at a steel producer. This person receives a requirement from a plant, for example seventy five thousand tonnes of coking coal needed by mid November. They currently solve it by calling brokers daily.</p>
+    <p>They are not a data scientist. They will not read a confusion matrix. They will distrust any number they cannot trace to an assumption.</p>
+  </section>
+
+  <section id="problems">
+    <h2>5. Pain points being solved</h2>
+    <ol>
+      <li>Daily spot market exploration produces reactive decisions and missed savings.</li>
+      <li>Freight rates are extremely volatile, so timing a fix badly is expensive.</li>
+      <li>East Coast ports differ sharply in draft, so the cheapest freight rate is often not the cheapest delivered cargo.</li>
+      <li>Vessel idle time and demurrage arise from planning that ignores port limits.</li>
+      <li>There is no structured view of what is actually driving the market.</li>
+      <li>Procurement is stuck on single spot contracts when the stated objective is to move to short and medium term multiple voyage contracts.</li>
+    </ol>
+  </section>
+
+  <section id="scope">
+    <h2>6. Scope</h2>
+
+    <h3>6.1 In scope</h3>
+    <ol>
+      <li>Dry bulk and heavy break bulk cargo. Coking coal, thermal coal, limestone, iron ore, manganese ore and steel scrap.</li>
+      <li>Origins named in the problem statement. Australia, United States, Mozambique, Russia and Indonesia.</li>
+      <li>East Coast Indian discharge ports. Paradip, Visakhapatnam, Gangavaram, Gopalpur, Dhamra, Haldia and Sagar Sandheads.</li>
+      <li>Vessel classes. Handysize, Supramax, Panamax and Capesize.</li>
+      <li>Freight rate forecasting per vessel class with explicit uncertainty.</li>
+      <li>Port constraint feasibility filtering.</li>
+      <li>Landed cost per tonne calculation.</li>
+      <li>Fix now, wait or split recommendation.</li>
+    </ol>
+
+    <h3>6.2 Out of scope</h3>
+    <ol>
+      <li>Live vessel tracking. Free global AIS coverage of the Bay of Bengal is limited, so this is not promised.</li>
+      <li>Actual contract execution or broker integration.</li>
+      <li>Tanker, container or general cargo trades.</li>
+      <li>West Coast ports in the first version.</li>
+    </ol>
+
+    <h3>6.3 Feature phasing</h3>
+    <p><strong>Phase 0. Prototype for the idea presentation.</strong></p>
+    <ol>
+      <li>Decision Console with five inputs and ranked option cards.</li>
+      <li>Hard constraint filtering with visible rejections.</li>
+      <li>Landed cost per tonne with an expandable breakdown.</li>
+      <li>Rate history chart with a forecast band.</li>
+      <li>Naive persistence baseline and one learned model, with a skill score displayed.</li>
+    </ol>
+    <p><strong>Phase 1. Internal hackathon.</strong></p>
+    <ol>
+      <li>Port Intelligence screen with cited constraint sources.</li>
+      <li>Congestion and expected waiting days.</li>
+      <li>Editable assumptions panel.</li>
+      <li>Backtested decision policy against always spot fixing.</li>
+      <li>Driver attribution using SHAP.</li>
+    </ol>
+    <p><strong>Phase 2. Grand Finale.</strong></p>
+    <ol>
+      <li>Contract structure recommendation. Spot, period or contract of affreightment.</li>
+      <li>Parcel splitting optimisation.</li>
+      <li>Scenario stress testing.</li>
+      <li>Decision Log with outcome tracking.</li>
+      <li>One page printable recommendation export.</li>
+      <li>Docker packaging for offline deployment.</li>
+    </ol>
+  </section>
+
+  <section id="screens">
+    <h2>7. The three screens</h2>
+
+    <h3>7.1 Screen 1. Decision Console</h3>
+    <p>Purpose. Produce the answer.</p>
+    <p>Inputs. Cargo type, quantity in tonnes, origin region, required arrival window, and destination which may be a specific plant or left to the system to choose.</p>
+    <p>Outputs. A plain English recommendation banner. Three to five ranked option cards showing landed cost per tonne, deliverable tonnes and a one line reason. At least one deliberately shown rejected option with the reason for rejection. An expandable cost breakdown covering freight, port charges, expected demurrage, lightering and inland movement.</p>
+
+    <h3>7.2 Screen 2. Market and Forecast</h3>
+    <p>Purpose. Make the number on Screen 1 believable.</p>
+    <p>Contents. Historical rates per vessel class. Forecast shown as a widening band, not a line. A forecast honesty panel stating how much better the model is than assuming tomorrow equals today, at each horizon. Driver attribution. Current market position relative to the last two years.</p>
+
+    <h3>7.3 Screen 3. Port Intelligence</h3>
+    <p>Purpose. Answer the question why an option was ruled out.</p>
+    <p>Contents. Each port with maximum draft, length overall, beam and deadweight limits, each value carrying a clickable source citation. Largest vessel class that can berth fully loaded. Loading percentage achievable for larger classes. Congestion and typical waiting days. Lightering availability and cost.</p>
+
+    <h3>7.4 Non negotiable design rules</h3>
+    <ol>
+      <li>One screen produces the answer. The other screens justify it.</li>
+      <li>Five inputs maximum. Everything else has a default that can be overridden.</li>
+      <li>Recommendations are in plain language, not a raw confidence number.</li>
+      <li>Every number on screen is clickable and reveals the assumption behind it.</li>
+      <li>Every assumption is user editable. A chartering manager knows their own port costs better than the model does.</li>
+      <li>Uncertainty is always visible. A band, never a bare line.</li>
+      <li>Where the model has no forecasting skill at a horizon, the interface says so.</li>
+    </ol>
+  </section>
+
+  <section id="architecture">
+    <h2>8. System architecture</h2>
+
+    <h3>8.1 Architectural principle</h3>
+    <p>The work is split into what runs overnight and what runs when the user clicks. Overnight, the system pulls data, engineers features, retrains models and pre computes forecasts for every vessel class at every horizon. On click, it performs lookups and arithmetic only. This is the decision that makes the demo instant instead of laggy.</p>
+
+    <h3>8.2 Services</h3>
+    <p>There are three services and one database.</p>
+    <ol>
+      <li>Web. React. Talks only to the Express gateway.</li>
+      <li>API. Node and Express. Handles requests, persistence, and calls the ML service.</li>
+      <li>ML. Python and FastAPI. Holds forecasting, constraints, capacity and cost logic.</li>
+      <li>Database. MongoDB.</li>
+    </ol>
+    <p>React does not call Python directly, because a single entry point keeps request logging, scenario saving and future authentication in one place.</p>
+
+    <h3>8.3 Nightly batch pipeline</h3>
+    <p>Runs on a schedule, and can also be run manually by command.</p>
+    <ol>
+      <li>Ingest freight rate history for each vessel class from the configured source file or API.</li>
+      <li>Ingest commodity prices, bunker prices and economic indicators.</li>
+      <li>Ingest published port position reports to derive a congestion proxy.</li>
+      <li>Validate and deduplicate. Reject rows outside plausible ranges.</li>
+      <li>Build the feature matrix. Lags, rolling means, rolling volatility, day of week, month, and exogenous series.</li>
+      <li>Train the naive baseline, the statistical model and the gradient boosted model.</li>
+      <li>Evaluate with expanding window time series cross validation. Compute skill score against naive persistence at every horizon.</li>
+      <li>Persist trained models to disk and forecasts to MongoDB.</li>
+      <li>Write a run record with timestamps, row counts and metric values.</li>
+    </ol>
+
+    <h3>8.4 Request time pipeline</h3>
+    <p>Target latency under one second.</p>
+    <ol>
+      <li>Candidate generation. Take the cargo quantity and origin. Build every combination of vessel class and East Coast discharge port. Four classes by seven ports gives under thirty candidates.</li>
+      <li>Hard constraint filtering. For each candidate, check maximum draft, length overall, beam and deadweight against the port constraint record. Mark infeasible candidates as rejected with a stated reason, rather than silently dropping them.</li>
+      <li>Capacity adjustment. For each surviving candidate, compute the tonnes actually deliverable under two independent ceilings. The weight ceiling comes from deadweight reduced by the draft limit. The volume ceiling comes from the vessel's hold volume divided by the cargo's stowage factor. Whichever is lower binds, and a cargo held by the volume ceiling is said to cube out. Lightering can relieve a weight restriction but never a volume one.</li>
+      <li>Cost assembly. Look up the pre computed forecast rate for that vessel class over the required arrival window. Add port charges, expected demurrage derived from current congestion, lightering cost where required, and inland movement cost to the destination plant. Divide the total by deliverable tonnes to obtain landed cost per tonne.</li>
+      <li>Ranking. Sort surviving candidates by landed cost per tonne ascending.</li>
+      <li>Timing decision. Compare the cost of fixing today against the forecast distribution of cost across the acceptable window. If the expected saving from waiting exceeds the downside risk by the configured margin, recommend waiting. Otherwise recommend fixing now. If a split parcel beats every single vessel option, recommend splitting.</li>
+      <li>Explanation assembly. Attach the two or three factors that most influenced the answer, plus the assumption set used.</li>
+      <li>Response. Return one JSON payload containing recommendation, ranked options, rejected options, forecast summary and assumptions.</li>
+    </ol>
+
+    <h3>8.5 API contracts</h3>
+    <p><strong>Express gateway, public.</strong> POST <code>/api/recommend</code>.</p>
+    <p>Request body fields.</p>
+    <ol>
+      <li>cargo_type. String. One of coking_coal, thermal_coal, limestone.</li>
+      <li>quantity_tonnes. Number.</li>
+      <li>origin. String. One of australia, usa, mozambique, russia, indonesia.</li>
+      <li>earliest_arrival. ISO date string.</li>
+      <li>latest_arrival. ISO date string.</li>
+      <li>destination_plant. Optional string.</li>
+      <li>destination_port. Optional string. If absent, the system selects.</li>
+      <li>overrides. Optional object of assumption overrides.</li>
+    </ol>
+    <p>Response body fields.</p>
+    <ol>
+      <li>recommendation. Object with action, headline, reason and confidence_label. Action is one of fix_now, wait, split.</li>
+      <li>options. Array of option objects, ranked.</li>
+      <li>rejected. Array of rejected candidate objects with reason.</li>
+      <li>forecast_summary. Object with horizon days, forecast band and skill score.</li>
+      <li>assumptions. Object listing every assumption value used and whether it was defaulted or overridden.</li>
+      <li>generated_at. ISO timestamp.</li>
+    </ol>
+    <p>Other Express endpoints.</p>
+    <ol>
+      <li>GET <code>/api/ports</code>. Reference data with citations.</li>
+      <li>GET <code>/api/vessels</code>. Vessel class reference data.</li>
+      <li>GET <code>/api/rates</code>. Historical series with forecast band, filtered by vessel class.</li>
+      <li>POST <code>/api/scenarios</code>. Save a scenario.</li>
+      <li>GET <code>/api/scenarios</code>. List saved scenarios.</li>
+    </ol>
+    <p><strong>ML service, internal only.</strong></p>
+    <ol>
+      <li>POST <code>/ml/recommend</code>. Full pipeline. Called by Express.</li>
+      <li>POST <code>/ml/forecast</code>. Forecast only, for a vessel class and horizon.</li>
+      <li>GET <code>/ml/skill</code>. Skill scores by vessel class and horizon.</li>
+      <li>GET <code>/ml/health</code>.</li>
+    </ol>
+
+    <h3>8.6 MongoDB collections</h3>
+    <ol>
+      <li>rate_history. One document per vessel class per date. Fields are vessel_class, date, index_value, tce_usd_per_day, source.</li>
+      <li>commodity_history. Date, series name, value, source.</li>
+      <li>congestion_history. Port, date, vessels_at_berth, vessels_at_anchorage, estimated_wait_days, source.</li>
+      <li>ports. Port code, name, max_draft_m, max_loa_m, max_beam_m, max_dwt, lightering_available, lightering_cost_per_tonne, port_charge_per_tonne, and a citations object holding a source URL for every numeric field.</li>
+      <li>vessel_classes. Class name, dwt_min, dwt_max, typical_loa_m, typical_beam_m, typical_laden_draft_m.</li>
+      <li>routes. Origin, discharge port, distance_nm, typical_voyage_days.</li>
+      <li>cost_assumptions. Key, value, unit, source, editable flag.</li>
+      <li>forecasts. Vessel class, generated_at, horizon_days, point, lower, upper.</li>
+      <li>model_runs. Run timestamp, row counts, metrics, skill scores.</li>
+      <li>scenarios. Saved user inputs and the response returned.</li>
+      <li>decision_log. Phase two. Recommendation, user decision, later outcome.</li>
+    </ol>
+    <p>Indexes. A compound index on rate_history by vessel_class and date. An index on forecasts by vessel_class and generated_at.</p>
+
+    <h3>8.7 Reference data strategy</h3>
+    <p>Port constraints, vessel classes and routes live as version controlled JSON files in the repository and are loaded into MongoDB by a seed script, because these values are small, rarely change, and every number needs a source citation that must be reviewable in a pull request. Every numeric field in ports.json carries a matching entry in its citations object. A value without a citation must not be merged.</p>
+
+    <h3>8.8 Model layer design</h3>
+    <p>Three models, always compared, never one alone.</p>
+    <ol>
+      <li>Baseline. Naive persistence. Tomorrow equals today. This is the number every other model must beat.</li>
+      <li>Statistical. Seasonal decomposition plus an autoregressive model. Interpretable, fast, and often competitive.</li>
+      <li>Learned. Gradient boosting, or in the current build, Ridge regression, on lagged and exogenous features.</li>
+    </ol>
+    <p>Evaluation is expanding window time series cross validation, never a random split. Reported metrics are mean absolute error at each horizon, skill score defined as one minus the model error divided by the baseline error, and coverage of the prediction interval. If skill score is not positive at a horizon, the interface must show a no skill banner for that horizon rather than a confident forecast.</p>
+
+    <h3>8.9 Deployment</h3>
+    <p>Local development runs three processes plus MongoDB. A production demo runs docker compose with four containers. Everything must work with no internet connection once data is seeded, because a live API call during a presentation is an unnecessary way to fail.</p>
+  </section>
+
+  <section id="requirements">
+    <h2>9. Requirements summary</h2>
+    <p>Requirement identifiers are stable and are not renumbered as the project evolves.</p>
+
+    <h3>9.1 Functional requirements</h3>
+    <ol>
+      <li>FR-01. The system shall accept a cargo requirement consisting of cargo type, quantity in tonnes, origin region, earliest acceptable arrival date and latest acceptable arrival date.</li>
+      <li>FR-02. The system shall accept an optional destination plant or destination port. When neither is supplied, the system shall evaluate all East Coast discharge ports.</li>
+      <li>FR-03. The system shall present no more than five mandatory input fields. All other parameters shall carry defaults.</li>
+      <li>FR-04. The system shall evaluate every combination of vessel class and discharge port against maximum draft, maximum length overall, maximum beam and maximum deadweight.</li>
+      <li>FR-05. The system shall mark infeasible combinations as rejected rather than removing them from the response.</li>
+      <li>FR-06. Each rejection shall state the failed constraint, the port limit value, the vessel requirement value, and the source citation for the port limit.</li>
+      <li>FR-07. The system shall compute deliverable tonnes for each feasible combination, accounting for draft limited partial loading.</li>
+      <li>FR-08. The system shall flag whether lightering at anchorage is required.</li>
+      <li>FR-09. The system shall compute landed cost per tonne as total voyage cost divided by deliverable tonnes, not by nominal vessel capacity.</li>
+      <li>FR-10. Total voyage cost shall comprise freight, port charges, expected demurrage, lightering cost where applicable and inland movement cost.</li>
+      <li>FR-11. Every cost component shall be individually visible to the user.</li>
+      <li>FR-12. The system shall forecast freight rates separately for each vessel class.</li>
+      <li>FR-13. Every forecast shall be accompanied by a prediction interval, never a bare point estimate.</li>
+      <li>FR-14. The system shall compute and display a skill score against a naive persistence baseline at every forecast horizon.</li>
+      <li>FR-15. Where the skill score is not positive at a horizon, the interface shall display a no skill notice instead of a confident forecast.</li>
+      <li>FR-16. The system shall return exactly one of three recommended actions. Fix now, wait, or split the cargo.</li>
+      <li>FR-17. The recommendation shall be expressed in plain language, not as a numeric confidence value.</li>
+      <li>FR-18. The recommendation shall state the two or three factors that most influenced it.</li>
+      <li>FR-19. Every numeric value displayed shall be traceable to either a data source or a named assumption.</li>
+      <li>FR-20. Every assumption shall be user editable, and the recommendation shall recompute when an assumption changes.</li>
+      <li>FR-21. Port constraint values shall display their source citation on demand.</li>
+      <li>FR-22. The system shall allow a scenario to be saved and retrieved.</li>
+      <li>FR-23. Phase two. The system shall record each recommendation, the user's actual decision, and the subsequent market outcome.</li>
+    </ol>
+
+    <h3>9.2 Non functional requirements</h3>
+    <ol>
+      <li>NFR-01. A recommendation request shall return within one second under demo conditions.</li>
+      <li>NFR-02. The system shall operate with no internet connection once data is seeded.</li>
+      <li>NFR-03. The system shall run on a standard laptop. No GPU, no cluster.</li>
+      <li>NFR-04. Model retraining shall complete within five minutes on the full history.</li>
+      <li>NFR-05. Every reference data value shall carry a source field. A numeric reference value without a source shall not be merged into the repository.</li>
+      <li>NFR-06. Forecast evaluation shall use expanding window time series cross validation. Random train test splits are prohibited.</li>
+      <li>NFR-07. The interface shall never display an accuracy figure without the corresponding baseline figure beside it.</li>
+    </ol>
+
+    <h3>9.3 Data requirements</h3>
+    <p>Required for the prototype.</p>
+    <ol>
+      <li>DR-01. Daily freight rate history for Capesize, Panamax, Supramax and Handysize. Minimum three years, target ten years, with sub indices because vessel selection is inherently a per class question.</li>
+      <li>DR-02. Port constraint reference data for Paradip, Visakhapatnam, Gangavaram, Gopalpur, Dhamra, Haldia and Sagar Sandheads.</li>
+      <li>DR-03. Vessel class reference data. Deadweight range, typical length overall, typical beam, typical laden draft.</li>
+      <li>DR-04. Approximate sailing distances for each origin and discharge port pair.</li>
+    </ol>
+    <p>Desirable, for phase one and two.</p>
+    <ol>
+      <li>DR-05. Commodity price history for coking coal, thermal coal and iron ore.</li>
+      <li>DR-06. Bunker fuel price history.</li>
+      <li>DR-07. Economic indicators. An equity index and a dollar index.</li>
+      <li>DR-08. Published port position reports for congestion.</li>
+    </ol>
+    <p>Data the project will not have, and says so plainly.</p>
+    <ol>
+      <li>DR-09. Actual SAIL fixture history, demurrage records and negotiated port tariffs.</li>
+      <li>DR-10. Licensed broker data from commercial providers.</li>
+      <li>DR-11. Forward freight agreement curves.</li>
+      <li>DR-12. Comprehensive real time vessel positions for the Bay of Bengal.</li>
+    </ol>
+    <p>Consequence. All cost assumptions are drawn from public tariffs, labelled as assumptions in the interface, and user editable.</p>
+    <ol>
+      <li>DR-13. Before any data source is used, its terms of use shall be recorded in data/reference/SOURCES.md together with the date checked and the person who checked it.</li>
+    </ol>
+
+    <h3>9.4 Acceptance criteria for the prototype</h3>
+    <ol>
+      <li>AC-01. A user enters seventy five thousand tonnes of coking coal from Australia with an arrival window, and receives a ranked set of options within one second.</li>
+      <li>AC-02. At least one option is shown as rejected, with the failing constraint named and the port limit cited.</li>
+      <li>AC-03. A draft limited option displays deliverable tonnes lower than nominal capacity, and the resulting landed cost per tonne reflects the reduced quantity.</li>
+      <li>AC-04. The cost breakdown expands to show every component.</li>
+      <li>AC-05. The forecast chart displays a widening band and the skill score against naive persistence.</li>
+      <li>AC-06. Changing one assumption in the assumptions panel changes the ranking.</li>
+      <li>AC-07. The entire flow works with networking disabled.</li>
+    </ol>
+
+    <h3>9.5 Open items requiring team verification</h3>
+    <ol>
+      <li>OI-01. Which SAIL plant is served by which discharge port. Verify against SAIL's annual report before displaying any plant to port mapping.</li>
+      <li>OI-02. Confirm current published draft figures directly with each port authority, since secondary sources disagree.</li>
+      <li>OI-03. Confirm the licence terms of the chosen freight rate data source.</li>
+      <li>OI-04. Confirm the 2026 idea presentation template slide count on sih.gov.in.</li>
+    </ol>
+  </section>
+
+  <section id="roadmap">
+    <h2>10. Build roadmap</h2>
+    <p>The roadmap is written as a step by step build order for a team of six. A short summary of each step follows. The full detail lives in ROADMAP.md.</p>
+    <ol>
+      <li>Step 0. Hand calculation, data sourcing and reading the domain knowledge, before any code is written.</li>
+      <li>Step 1. Repository skeleton created exactly as given in the architecture file tree.</li>
+      <li>Step 2. Reference data written and seeded into MongoDB. Vessel classes, routes, cost assumptions.</li>
+      <li>Step 3. The constraint engine. Deterministic and testable. Considered the heart of the project.</li>
+      <li>Step 4. The cost model, checked against the domain lead's hand calculation from step zero.</li>
+      <li>Step 5. Forecasting, built in order. Baseline first, then evaluation, then features, then the learned model.</li>
+      <li>Step 6. The decision layer, which must default to fix now whenever forecast skill is absent.</li>
+      <li>Step 7. The FastAPI service, wiring candidates, constraints, capacity, cost and decision into one handler.</li>
+      <li>Step 8. The Express gateway, calling the Python service.</li>
+      <li>Step 9. The Decision Console interface.</li>
+      <li>Step 10. The Market and Forecast interface.</li>
+      <li>Step 11. Feature freeze and rehearsal. No new features after this point.</li>
+    </ol>
+    <p>Phase one, after the idea presentation, adds Port Intelligence, congestion ingestion, the editable assumptions panel, a backtested decision policy reported as money saved, and SHAP driver attribution.</p>
+    <p>Phase two, before the finale, adds contract structure recommendation, parcel splitting optimisation, scenario stress testing, a decision log, a printable export, and verified offline Docker packaging.</p>
+    <h3>10.1 Standing rules</h3>
+    <ol>
+      <li>Nobody ships code they cannot explain out loud in sixty seconds.</li>
+      <li>No numeric reference value is merged without a source citation.</li>
+      <li>No accuracy figure is ever shown without its baseline beside it.</li>
+      <li>No live external API call during a demonstration.</li>
+      <li>Feature freeze happens two hours before any presentation, without exception.</li>
+    </ol>
+  </section>
+
+  <section id="status">
+    <h2>11. Current honest status</h2>
+    <div class="status-box">
+      <p>Running on scaffolding data, the model shows negative skill at almost every horizon. This is correct, not broken. The scaffolding is generated as a near random walk, so there is no signal to find.</p>
+      <p>The decision engine is hard wired to refuse a wait recommendation whenever skill is absent, and falls back to fix now while stating why. This is the single most defensible thing in the project, and it is not to be removed to make a demo look better.</p>
+    </div>
+    <p>Independent validation. Given only Haldia's published nine point one metre draft limit and a Panamax's typical laden draft, the capacity model computes a maximum load of forty three point eight percent. Published sources independently state Panamax vessels at Haldia carry forty to fifty percent of capacity. The model was never told this figure, and it agrees with a documented fact it derived from physics.</p>
+    <h3>11.1 Honesty commitments</h3>
+    <ol>
+      <li>Freight indices behave close to a random walk at short horizons. A skill score against naive persistence is reported, and the horizons with no skill are published.</li>
+      <li>Port cost, demurrage and inland cost figures are assumptions drawn from public tariffs, clearly labelled as such, and user editable.</li>
+      <li>Every port constraint value carries a source citation, because published sources disagree with each other.</li>
+      <li>No claim is made of real time vessel tracking or licensed broker data.</li>
+    </ol>
+    <h3>11.2 Known open items</h3>
+    <ol>
+      <li>Plant to port distances are assumptions and need verification against SAIL's annual report.</li>
+      <li>Most port fields other than draft, length overall and beam are unverified assumptions.</li>
+      <li>TCE multipliers in the pipeline are placeholders and need replacement with published TCE figures.</li>
+      <li>The Express gateway and the React app are scaffolded, but the prototype currently runs without them, on the static dashboard alone.</li>
+    </ol>
+  </section>
+
+  <section id="running">
+    <h2>12. How to run this project</h2>
+    <ol>
+      <li>From the project root, run <code>./run.sh</code>.</li>
+      <li>Open <code>http://localhost:8000</code> in a browser to reach the working three screen dashboard.</li>
+      <li>No database is required for the prototype, and no internet connection is required after the first install.</li>
+    </ol>
+    <p>To use real freight rate data instead of scaffolding data, place a CSV file at <code>data/raw/baltic_indices.csv</code> with columns date, BCI, BPI, BSI, BHSI. The loader prefers this file automatically, and the header badge on the dashboard switches from SCAFFOLDING to REAL DATA. Nothing else needs to change.</p>
+    <h3>12.1 Project layout</h3>
+    <ol>
+      <li><code>ml-service/app/core/</code>. Constraints, capacity, cost model, decision, pipeline.</li>
+      <li><code>ml-service/app/forecasting/</code>. Baseline, features, evaluation, training, prediction.</li>
+      <li><code>ml-service/static/index.html</code>. The three screen working dashboard.</li>
+      <li><code>data/reference/</code>. Ports, vessels, cargo types, routes and cost assumptions, each with citations.</li>
+      <li><code>docs/</code>. PROJECT.md, ARCHITECTURE.md, REQUIREMENTS.md, ROADMAP.md, and this overview page.</li>
+    </ol>
+  </section>
+
+</main>
+
+<footer>
+  <p>This page was generated from the project's markdown documentation. For the authoritative text, read PROJECT.md, ARCHITECTURE.md, REQUIREMENTS.md and ROADMAP.md directly in the docs folder.</p>
+</footer>
+
+</body>
+</html>
