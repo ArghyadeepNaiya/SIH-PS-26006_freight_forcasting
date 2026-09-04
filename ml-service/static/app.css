@@ -40,28 +40,28 @@
 
 :root {
   /* --- the depth ramp. Surfaces, deepest to shallowest. --- */
-  --deep:       #06111A;   /* the ground. Open water at night. */
-  --shelf:      #0C1D28;   /* panels and cards. One band up. */
-  --shoal:      #123243;   /* raised surfaces, inputs, the caution band. */
-  --drying:     #1B4257;   /* hairlines and borders. */
-  --shallows:   #6FC6E8;   /* the action colour. The top step of the same water. */
+  --deep:       #F8F9FB;   /* the ground. Light gray dashboard bg. */
+  --shelf:      #FFFFFF;   /* panels and cards. White. */
+  --shoal:      #F0EEF6;   /* raised surfaces, inputs. Very light purple. */
+  --drying:     #E5D9F2;   /* hairlines and borders. Light purple border. */
+  --shallows:   #380B61;   /* the action colour. Dark purple. */
 
   /* --- ink --- */
-  --chartwhite: #E4EFF4;   /* primary text. Chart paper, reversed out. */
-  --sounding:   #7FB2C8;   /* secondary text. The colour soundings are printed in. */
-  --faint:      #55798C;   /* tertiary. Citations, footnotes. */
+  --chartwhite: #212121;   /* primary text. Dark gray/black. */
+  --sounding:   #616161;   /* secondary text. Medium gray. */
+  --faint:      #9E9E9E;   /* tertiary. Light gray. */
 
   /* --- state. Each of these always appears with a word beside it. --- */
-  --starboard:  #45CE9B;   /* clear, accepted, workable. */
-  --buoy:       #E0AE3E;   /* unverified assumption, caution. */
-  --port:       #F5675A;   /* refused, not workable, rejected. */
-  --overprint:  #D97BFF;   /* magenta. Advisory and cautionary notes only. */
+  --starboard:  #27AE60;   /* clear, accepted, workable. Green. */
+  --buoy:       #F2994A;   /* unverified assumption, caution. Orange/Yellow. */
+  --port:       #EB5757;   /* refused, not workable, rejected. Red. */
+  --overprint:  #7E57C2;   /* magenta/purple. Advisory. */
 
   /* --- chart-mark steps of the same hues, dropped into the band a mark needs
          on a dark ground. A badge and its mark stay recognisably one colour. --- */
-  --starboard-mark: #00A070;
-  --port-mark:      #DC5045;
-  --overprint-mark: #B356D7;
+  --starboard-mark: #219653;
+  --port-mark:      #EB5757;
+  --overprint-mark: #7E57C2;
 
   --rule: 1px solid var(--drying);
   --measure: 68ch;         /* prose never runs wider than this. */
@@ -83,18 +83,19 @@ html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
-  background: var(--deep);
+  background: linear-gradient(135deg, #B39DDB 0%, #7E57C2 100%);
   color: var(--chartwhite);
-  font: 400 16px/1.55 "Barlow Semi Condensed", "Fira Sans Condensed",
-        "Helvetica Neue", Arial, sans-serif;
-  /* Depth contours. Two very faint diagonal washes, so the ground reads as
-     water with relief in it rather than as flat black. They are behind
-     everything and carry no meaning, so they are cheap and static. */
-  background-image:
-    radial-gradient(1100px 620px at 12% -10%, #0B2331 0%, transparent 70%),
-    radial-gradient(900px 520px at 96% 4%, #0A1E2B 0%, transparent 68%);
+  font: 400 16px/1.55 "Inter", "Helvetica Neue", Arial, sans-serif;
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
+}
+
+#main-wrapper {
+  background: var(--deep);
+  margin: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  overflow: hidden;
 }
 
 /* Figures are the content here, so they are mono and they line up in a column. */
@@ -136,8 +137,7 @@ body {
 .titleblock {
   border-bottom: 2px solid var(--drying);
   padding: 26px 32px 20px;
-  background:
-    linear-gradient(180deg, rgba(18,50,67,.55) 0%, rgba(6,17,26,0) 100%);
+  background: var(--deep);
 }
 .titleblock-inner { max-width: 1240px; }
 
@@ -226,7 +226,8 @@ p { margin: 9px 0; }
 
 .card {
   background: var(--shelf); border: var(--rule);
-  padding: 22px; margin-bottom: 16px;
+  padding: 22px; margin-bottom: 16px; border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
 }
 .card-title { font-family: "Barlow Condensed", sans-serif; font-weight: 600;
   font-size: 21px; margin: 0; line-height: 1.15; }
@@ -271,11 +272,11 @@ fieldset fieldset legend { font-size: 17px; }
 button { font-family: inherit; cursor: pointer; }
 
 .btn, button.go {
-  background: var(--shallows); color: var(--deep); border: 0; border-radius: 2px;
+  background: var(--shallows); color: #fff; border: 0; border-radius: 6px;
   padding: 14px 26px; font: inherit; font-size: 17px; font-weight: 700;
   letter-spacing: .005em; transition: background .12s ease;
 }
-.btn:hover:not(:disabled), button.go:hover:not(:disabled) { background: #96DAF5; }
+.btn:hover:not(:disabled), button.go:hover:not(:disabled) { background: #551c8a; }
 .btn:disabled, button.go:disabled { opacity: .5; cursor: progress; }
 button.go, .btn.wide { width: 100%; margin-top: 24px; }
 
