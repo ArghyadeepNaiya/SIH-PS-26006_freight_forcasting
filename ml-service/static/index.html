@@ -1,6 +1,7 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Freight Charter Decision Console</title>
+<script src="https://unpkg.com/lucide@latest"></script>
 <link rel="stylesheet" href="/static/app.css">
 </head><body>
 
@@ -13,19 +14,8 @@
 <div id="main-wrapper">
 <header class="titleblock">
   <div class="titleblock-inner">
-    <p class="chartno">Smart India Hackathon problem statement 26006. Ministry of Steel.
-      Steel Authority of India Limited.</p>
-    <h1>Freight Charter Decision Console</h1>
-    <p class="strap">This system plans the sea journey that brings bulk raw material, such as
-      coking coal or iron ore, from another country to a steel plant in eastern India. You say
-      what you need and when you need it. The system chooses what size of ship to hire and
-      which Indian port it should unload at. It then tells you what one tonne will have cost by
-      the time it reaches the plant gate, and whether to book a ship today or wait.</p>
-    <p class="strap">Shipping has a lot of trade words in it. Each one is marked with a dotted
-      underline the first time it appears on a screen. Rest the mouse pointer on a marked word
-      and its meaning appears. Every one of them is also written out in ordinary English on the
-      plain word list screen, which is the last of the five listed below, so nothing here
-      depends on being able to use a mouse.</p>
+    <h1>Intelligent Freight Charter Decision Console</h1>
+    <p class="strap">Optimize vessel selection, forecast freight costs, and streamline bulk cargo procurement for East Coast ports.</p>
     <ul class="blocknotes">
       <li>Water depths and ship drafts<span class="v">in metres</span></li>
       <li>All costs<span class="v">US dollars and rupees, for each tonne delivered</span></li>
@@ -34,19 +24,17 @@
   </div>
 </header>
 
-<!-- data-page names the section to show. It used to be a position, and the code
-     hid screens by counting them, which meant inserting a screen anywhere in the
-     middle silently pointed every later button at the wrong one. -->
+<div class="layout-container">
 <nav class="sheets" aria-label="Screens">
-  <button type="button" class="tabbtn" data-page="p0" aria-current="page">1. Plan one shipment</button>
-  <button type="button" class="tabbtn" data-page="p5">2. Plan a buying programme</button>
-  <button type="button" class="tabbtn" data-page="p6">3. Compare supply countries</button>
-  <button type="button" class="tabbtn" data-page="p1">4. Prices, forecast and timing</button>
-  <button type="button" class="tabbtn" data-page="p7">5. Risks and warnings</button>
-  <button type="button" class="tabbtn" data-page="p2">6. What each port can take</button>
-  <button type="button" class="tabbtn" data-page="p3">7. Live port space and weather</button>
-  <button type="button" class="tabbtn" data-page="p4">8. Plain word list</button>
-  <a class="away" href="/port">Port operator sign in</a>
+  <button type="button" class="tabbtn" data-page="p0" aria-current="page"><i data-lucide="ship"></i> Plan one shipment</button>
+  <button type="button" class="tabbtn" data-page="p5"><i data-lucide="calendar"></i> Plan a buying programme</button>
+  <button type="button" class="tabbtn" data-page="p6"><i data-lucide="map-pin"></i> Compare supply countries</button>
+  <button type="button" class="tabbtn" data-page="p1"><i data-lucide="line-chart"></i> Prices, forecast and timing</button>
+  <button type="button" class="tabbtn" data-page="p7"><i data-lucide="alert-triangle"></i> Risks and warnings</button>
+  <button type="button" class="tabbtn" data-page="p2"><i data-lucide="anchor"></i> What each port can take</button>
+  <button type="button" class="tabbtn" data-page="p3"><i data-lucide="cloud-lightning"></i> Live port space and weather</button>
+  <button type="button" class="tabbtn" data-page="p4"><i data-lucide="book-open"></i> Plain word list</button>
+  <a class="away" href="/port"><i data-lucide="log-in"></i> Port operator sign in</a>
 </nav>
 
 <main id="main" tabindex="-1">
@@ -397,6 +385,7 @@
 
 </main>
 </div>
+</div>
 
 <script>
 "use strict";
@@ -626,7 +615,8 @@ function buildGlossary() {
 }
 
 function markTerm(text, e) {
-  return `<span class="termwrap"><span class="term">${escapeHTML(text)}</span>` +
+  const infoIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-left: 2px; color: var(--sounding);"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>`;
+  return `<span class="termwrap"><span class="term">${escapeHTML(text)} ${infoIcon}</span>` +
     `<span class="sr"> (${escapeHTML(e.g)})</span>` +
     `<span class="term-pop" aria-hidden="true"><b>${escapeHTML(e.t)}</b>` +
     `${escapeHTML(e.plain)}</span></span>`;
@@ -1940,4 +1930,5 @@ function renderPorts() {
 }
 
 boot();
+lucide.createIcons();
 </script></body></html>

@@ -172,41 +172,50 @@ h1 {
 .blocknotes .v.scaffold { color: var(--buoy); }
 .blocknotes .v.real     { color: var(--starboard); }
 
-/* ------------------------------------------------------------------- nav
+/* --------/* The layout container wraps the sidebar nav and the main area */
+.layout-container {
+  display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+  gap: 24px;
+  padding: 0 16px;
+}
 
-   Tabs sit on the rule rather than floating above it as pills, and the current
+/* ----------------------------------------------------------- navigation */
+/* The buttons across the top that swap sections in and out. The active page
+   has no border on its bottom edge, so it visually merges into the page once
    one breaks through it. That is how a chart's sheet index reads.            */
 
 nav.sheets {
-  border-bottom: 1px solid var(--drying);
-  padding: 0 32px;
-  display: flex; gap: 4px; flex-wrap: wrap; align-items: stretch;
+  flex: 0 0 260px;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 16px 0;
 }
-nav.sheets button {
-  background: none; border: 0; border-bottom: 3px solid transparent;
-  color: var(--sounding); font: inherit; font-size: 16px; font-weight: 500;
-  padding: 14px 16px 11px; cursor: pointer; margin-bottom: -1px;
-  transition: color .12s ease, border-color .12s ease;
+nav.sheets button, nav.sheets .away {
+  background: var(--shelf); border: 1px solid transparent; border-radius: 8px;
+  color: var(--sounding); font: inherit; font-size: 15px; font-weight: 500;
+  padding: 12px 16px; cursor: pointer; text-align: left;
+  transition: all .12s ease;
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none;
 }
-nav.sheets button:hover { color: var(--chartwhite); }
+nav.sheets button i, nav.sheets .away i { width: 18px; height: 18px; opacity: 0.7; }
+nav.sheets button:hover, nav.sheets .away:hover { 
+  background: var(--shoal); color: var(--chartwhite); 
+}
 nav.sheets button[aria-current="page"] {
-  color: var(--chartwhite); border-bottom-color: var(--shallows);
+  background: var(--shallows); color: var(--deep); border-color: var(--shallows);
   font-weight: 600;
 }
-nav.sheets .away {
-  margin-left: auto; align-self: center; color: var(--shallows);
-  font-size: 15px; font-weight: 500; padding: 10px 4px 10px 16px;
-  text-decoration: none; border-bottom: 1px solid transparent;
-}
-nav.sheets .away:hover { border-bottom-color: var(--shallows); }
+nav.sheets button[aria-current="page"] i { opacity: 1; }
 
 /* ------------------------------------------------------------------ main */
 
-main { padding: 30px 32px 90px; max-width: 1240px; }
+main { padding: 16px 0 90px; flex: 1; min-width: 0; }
 .page[hidden] { display: none; }
 
 .grid { display: grid; grid-template-columns: 330px minmax(0,1fr); gap: 32px; align-items: start; }
-@media (max-width: 940px) { .grid { grid-template-columns: 1fr; } }
+@media (max-width: 940px) { .grid { grid-template-columns: 1fr; } .layout-container { flex-direction: column; } nav.sheets { flex: none; width: 100%; } }
 
 h2 {
   font-family: "Barlow Condensed", sans-serif;
@@ -627,10 +636,11 @@ body.single #demand select { max-width: 320px; }
 
 .termwrap { position: relative; display: inline; }
 .term {
-  border-bottom: 1px dotted var(--shallows);
+  border-bottom: none;
   cursor: help;
+  font-weight: 500;
 }
-.termwrap:hover .term { color: var(--chartwhite); border-bottom-style: solid; }
+.termwrap:hover .term { color: var(--chartwhite); }
 
 .term-pop {
   position: absolute; left: 0; top: calc(100% + 9px); z-index: 50;
