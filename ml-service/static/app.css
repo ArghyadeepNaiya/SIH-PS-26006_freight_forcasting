@@ -40,28 +40,28 @@
 
 :root {
   /* --- the depth ramp. Surfaces, deepest to shallowest. --- */
-  --deep:       #F8F9FB;   /* the ground. Light gray dashboard bg. */
-  --shelf:      #FFFFFF;   /* panels and cards. White. */
-  --shoal:      #F0EEF6;   /* raised surfaces, inputs. Very light purple. */
-  --drying:     #E5D9F2;   /* hairlines and borders. Light purple border. */
-  --shallows:   #380B61;   /* the action colour. Dark purple. */
+  --deep:       #fafafa;   /* the ground. Light zinc-50 bg. */
+  --shelf:      #ffffff;   /* panels and cards. White. */
+  --shoal:      #f4f4f5;   /* raised surfaces, inputs. zinc-100. */
+  --drying:     #e5e7eb;   /* hairlines and borders. gray-200 border. */
+  --shallows:   #3b82f6;   /* the action colour. Blue-500. */
 
   /* --- ink --- */
-  --chartwhite: #212121;   /* primary text. Dark gray/black. */
-  --sounding:   #616161;   /* secondary text. Medium gray. */
-  --faint:      #9E9E9E;   /* tertiary. Light gray. */
+  --chartwhite: #111827;   /* primary text. Gray-900. */
+  --sounding:   #6b7280;   /* secondary text. Gray-500. */
+  --faint:      #9ca3af;   /* tertiary. Gray-400. */
 
   /* --- state. Each of these always appears with a word beside it. --- */
-  --starboard:  #27AE60;   /* clear, accepted, workable. Green. */
-  --buoy:       #F2994A;   /* unverified assumption, caution. Orange/Yellow. */
-  --port:       #EB5757;   /* refused, not workable, rejected. Red. */
-  --overprint:  #7E57C2;   /* magenta/purple. Advisory. */
+  --starboard:  #10b981;   /* clear, accepted, workable. Emerald-500. */
+  --buoy:       #f59e0b;   /* unverified assumption, caution. Amber-500. */
+  --port:       #ef4444;   /* refused, not workable, rejected. Red-500. */
+  --overprint:  #8b5cf6;   /* magenta/purple. Advisory. Violet-500. */
 
   /* --- chart-mark steps of the same hues, dropped into the band a mark needs
          on a dark ground. A badge and its mark stay recognisably one colour. --- */
-  --starboard-mark: #219653;
-  --port-mark:      #EB5757;
-  --overprint-mark: #7E57C2;
+  --starboard-mark: #10b981;
+  --port-mark:      #ef4444;
+  --overprint-mark: #8b5cf6;
 
   --rule: 1px solid var(--drying);
   --measure: 68ch;         /* prose never runs wider than this. */
@@ -83,18 +83,16 @@ html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
-  background: linear-gradient(135deg, #B39DDB 0%, #7E57C2 100%);
+  background: var(--deep);
   color: var(--chartwhite);
-  font: 400 16px/1.55 "Inter", "Helvetica Neue", Arial, sans-serif;
+  font: 400 15px/1.6 "Inter", "Helvetica Neue", Arial, sans-serif;
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
 }
 
 #main-wrapper {
   background: var(--deep);
-  margin: 16px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  margin: 0;
   overflow: hidden;
 }
 
@@ -148,9 +146,9 @@ body {
   margin: 0 0 8px;
 }
 h1 {
-  font-family: "Barlow Condensed", "Barlow Semi Condensed", sans-serif;
-  font-weight: 700; font-size: clamp(30px, 4.4vw, 46px); line-height: 1.02;
-  margin: 0; letter-spacing: -0.005em; color: var(--chartwhite);
+  font-family: "Inter", sans-serif;
+  font-weight: 700; font-size: clamp(26px, 3.5vw, 36px); line-height: 1.1;
+  margin: 0; letter-spacing: -0.01em; color: var(--chartwhite);
 }
 .titleblock .strap {
   color: var(--sounding); font-size: 16px; margin: 8px 0 0;
@@ -192,7 +190,7 @@ nav.sheets {
   padding: 16px 0;
 }
 nav.sheets button, nav.sheets .away {
-  background: var(--shelf); border: 1px solid transparent; border-radius: 8px;
+  background: transparent; border: 1px solid transparent; border-radius: 8px;
   color: var(--sounding); font: inherit; font-size: 15px; font-weight: 500;
   padding: 12px 16px; cursor: pointer; text-align: left;
   transition: all .12s ease;
@@ -204,10 +202,10 @@ nav.sheets button:hover, nav.sheets .away:hover {
   background: var(--shoal); color: var(--chartwhite); 
 }
 nav.sheets button[aria-current="page"] {
-  background: var(--shallows); color: var(--deep); border-color: var(--shallows);
-  font-weight: 600;
+  background: var(--shelf); color: var(--chartwhite); border-color: var(--drying);
+  font-weight: 600; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
 }
-nav.sheets button[aria-current="page"] i { opacity: 1; }
+nav.sheets button[aria-current="page"] i { opacity: 1; color: var(--shallows); }
 
 /* ------------------------------------------------------------------ main */
 
@@ -218,13 +216,13 @@ main { padding: 16px 0 90px; flex: 1; min-width: 0; }
 @media (max-width: 940px) { .grid { grid-template-columns: 1fr; } .layout-container { flex-direction: column; } nav.sheets { flex: none; width: 100%; } }
 
 h2 {
-  font-family: "Barlow Condensed", sans-serif;
-  font-weight: 600; font-size: 27px; line-height: 1.12; letter-spacing: 0;
-  color: var(--chartwhite); margin: 42px 0 4px;
+  font-family: "Inter", sans-serif;
+  font-weight: 700; font-size: 22px; line-height: 1.12; letter-spacing: -0.01em;
+  color: var(--chartwhite); margin: 42px 0 12px;
 }
 h2:first-child { margin-top: 0; }
-h3 { font-size: 19px; font-weight: 600; margin: 0 0 6px; line-height: 1.2; }
-h4 { font-size: 16px; font-weight: 600; margin: 18px 0 4px; color: var(--chartwhite); }
+h3 { font-size: 18px; font-weight: 600; margin: 0 0 6px; line-height: 1.2; }
+h4 { font-size: 15px; font-weight: 600; margin: 18px 0 4px; color: var(--chartwhite); }
 
 p { margin: 9px 0; }
 .lead { color: var(--sounding); font-size: 15.5px; margin: 4px 0 20px; max-width: var(--measure); }
@@ -235,17 +233,25 @@ p { margin: 9px 0; }
 
 .card {
   background: var(--shelf); border: var(--rule);
-  padding: 22px; margin-bottom: 16px; border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  padding: 24px; margin-bottom: 16px; border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
 }
-.card-title { font-family: "Barlow Condensed", sans-serif; font-weight: 600;
-  font-size: 21px; margin: 0; line-height: 1.15; }
+.card-title { font-family: "Inter", sans-serif; font-weight: 700;
+  font-size: 18px; margin: 0 0 4px; line-height: 1.15; }
 
 /* --------------------------------------------------------------- forms */
 
-form label, .field-label {
-  display: block; font-size: 15px; color: var(--sounding);
-  margin: 18px 0 6px; font-weight: 500;
+form { display: block; margin: 20px 0 0; }
+.form-grid { display: flex; flex-direction: column; gap: 16px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+.form-group { display: flex; flex-direction: column; }
+.hint-icon { width: 16px; height: 16px; color: var(--sounding); display: inline-block; vertical-align: -3px; margin-left: 6px; cursor: help; }
+.form-actions { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+
+label {
+  display: block; font-size: 15.5px; font-weight: 500;
+  margin: 0 0 6px; color: var(--chartwhite);
 }
 input[type=text], input[type=number], input[type=date], input[type=password],
 select, textarea {
@@ -315,10 +321,12 @@ button.go, .btn.wide { width: 100%; margin-top: 24px; }
 
 .verdict {
   position: relative; overflow: hidden;
-  background: linear-gradient(150deg, var(--shoal) 0%, var(--shelf) 62%);
+  background: var(--shelf);
   border: 1px solid var(--drying);
-  border-top: 3px solid var(--sounding);
-  padding: 30px 32px 26px; margin-bottom: 26px;
+  border-top: 4px solid var(--sounding);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  padding: 24px 32px; margin-bottom: 26px;
 }
 .verdict.fix_now { border-top-color: var(--starboard); }
 .verdict.wait    { border-top-color: var(--buoy); }
@@ -327,9 +335,9 @@ button.go, .btn.wide { width: 100%; margin-top: 24px; }
 .verdict-top { display: flex; justify-content: space-between; gap: 34px; flex-wrap: wrap; align-items: flex-start; }
 
 .verdict h3 {
-  font-family: "Barlow Condensed", sans-serif; font-weight: 700;
-  font-size: clamp(38px, 5.6vw, 62px); line-height: .95; margin: 0;
-  letter-spacing: -0.012em;
+  font-family: "Inter", sans-serif; font-weight: 700;
+  font-size: clamp(28px, 4vw, 38px); line-height: 1.1; margin: 0;
+  letter-spacing: -0.01em;
 }
 .verdict.fix_now h3 { color: var(--starboard); }
 .verdict.wait h3    { color: var(--buoy); }
@@ -337,38 +345,38 @@ button.go, .btn.wide { width: 100%; margin-top: 24px; }
 
 .verdict .why { margin: 12px 0 0; color: var(--chartwhite); font-size: 17px; max-width: 54ch; }
 
-.headline-price { text-align: right; white-space: nowrap; }
+.headline-price { text-align: right; white-space: nowrap; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; }
 .headline-price .amt {
-  display: block; font-size: clamp(32px, 4.6vw, 48px); font-weight: 500;
+  display: block; font-size: clamp(28px, 4vw, 42px); font-weight: 700;
   line-height: 1; color: var(--chartwhite);
 }
-.headline-price .unit { display: block; font-size: 14.5px; color: var(--sounding); margin-top: 7px; }
+.headline-price .unit { display: none; }
 .headline-price .inr {
-  display: block; font-size: 19px; color: var(--sounding); margin-top: 4px;
-  font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums;
+  display: block; font-size: 15px; color: var(--sounding); margin-top: 4px;
+  font-family: "Inter", sans-serif;
 }
 
-/* The route, as a passage plan read down the page. The connector between two
-   nodes is a real line, solid for the sea leg and dotted for the inland one,
-   because those are two different kinds of movement with two different costs. */
-.route { margin: 26px 0 0; padding: 20px 0 0; border-top: 1px solid var(--drying); }
-.route ol { list-style: none; margin: 0; padding: 0; }
-.route .node {
+.horizontal-route {
   display: flex; align-items: center; gap: 12px;
-  font-size: 18px; font-weight: 600; color: var(--chartwhite);
+  margin-top: 24px; padding-top: 20px;
+  border-top: 1px solid var(--drying);
+  flex-wrap: wrap;
 }
-.route .node::before {
-  content: ""; flex: none; width: 11px; height: 11px; border-radius: 50%;
-  border: 2px solid var(--sounding); background: var(--deep);
+.route-step {
+  display: flex; align-items: center; gap: 6px;
+  font-weight: 600; color: var(--chartwhite);
 }
-.route .node.dest::before { background: var(--starboard); border-color: var(--starboard); }
-.route .leg {
-  margin-left: 6px; padding: 7px 0 7px 21px; border-left: 2px dotted #2A5F7B;
+.route-step i { width: 18px; height: 18px; color: var(--shallows); }
+.route-line {
+  flex: 1; min-width: 40px; height: 2px;
+  background: var(--drying); position: relative;
+  display: flex; justify-content: center;
 }
-.route .leg.sea { border-left: 2px solid var(--sounding); }
-.route .leg .len {
-  font-family: "IBM Plex Mono", monospace; font-size: 13.5px; color: var(--sounding);
-  font-variant-numeric: tabular-nums;
+.route-line.dashed { background: transparent; border-top: 2px dashed var(--drying); }
+.route-label {
+  position: absolute; top: -20px; font-size: 12px;
+  color: var(--sounding); background: var(--shelf);
+  padding: 0 6px; white-space: nowrap; font-weight: 500;
 }
 
 .drivers { margin: 20px 0 0; display: flex; gap: 9px; flex-wrap: wrap; padding: 0; list-style: none; }
@@ -396,21 +404,21 @@ button.go, .btn.wide { width: 100%; margin-top: 24px; }
 
 .opt {
   background: var(--shelf); border: var(--rule);
-  padding: 20px 24px; margin-bottom: 12px;
-  display: grid; grid-template-columns: 76px minmax(0,1fr); gap: 26px; align-items: start;
+  padding: 24px; margin-bottom: 16px; border-radius: 12px;
+  display: block;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
 }
-.opt.best { border-color: #2C6B54; background: linear-gradient(160deg, #0D2A24 0%, var(--shelf) 55%); }
-@media (max-width: 620px) { .opt { grid-template-columns: 1fr; gap: 14px; } .draft { display: none; } }
+.opt.best { border-color: var(--starboard); border-left: 4px solid var(--starboard); }
+@media (max-width: 620px) { .opt { padding: 16px; } }
 
-.draft { width: 76px; }
-.draft svg { display: block; width: 100%; height: auto; }
+.draft { display: none; } /* Replaced by progress bar */
 
 .opt-top { display: flex; justify-content: space-between; gap: 22px; align-items: flex-start; flex-wrap: wrap; }
 .opt-name {
-  font-family: "Barlow Condensed", sans-serif; font-weight: 600;
-  font-size: 25px; line-height: 1.1; margin: 0; letter-spacing: 0;
+  font-family: "Inter", sans-serif; font-weight: 600;
+  font-size: 18px; line-height: 1.2; margin: 0; letter-spacing: -0.01em;
 }
-.opt-sub { color: var(--sounding); font-size: 15px; margin: 6px 0 0; max-width: 58ch; }
+.opt-sub { color: var(--sounding); font-size: 14px; margin: 4px 0 0; max-width: 58ch; }
 
 .rank {
   display: inline-block; background: var(--starboard); color: var(--deep);

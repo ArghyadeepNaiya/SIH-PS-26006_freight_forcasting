@@ -66,43 +66,40 @@
     <h2 class="card-title">What do you need delivered</h2>
     <div class="sub" style="margin-bottom:2px">Five questions. Everything else is filled in
       for you and can be changed later.</div>
-    <form id="cargoform">
-      <label for="origin">Which country is the cargo coming from</label>
-      <select id="origin"></select>
-      <p class="hint" id="originhint">The list of materials below changes to show only what
-        this country actually ships.</p>
+    <form id="cargoform" class="form-grid">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="origin">Which country is the cargo coming from <i data-lucide="info" class="hint-icon" id="originhint"></i></label>
+          <select id="origin"></select>
+        </div>
+        <div class="form-group">
+          <label for="cargo">What material are you buying <i data-lucide="info" class="hint-icon" id="cargohint"></i></label>
+          <select id="cargo"></select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="qty">How much do you need, in tonnes <i data-lucide="info" class="hint-icon" title="The whole load you want at the plant. One tonne is one thousand kilograms. A typical single shipload here is seventy five thousand tonnes."></i></label>
+          <input id="qty" type="number" value="75000" step="1000" min="1000" required>
+        </div>
+        <div class="form-group">
+          <label for="plant">Which steel plant is it going to</label>
+          <select id="plant"><option value="">I do not mind, choose the cheapest port for me</option></select>
+        </div>
+      </div>
 
-      <label for="cargo">What material are you buying</label>
-      <select id="cargo" aria-describedby="cargohint"></select>
-      <p class="hint" id="cargohint"></p>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="hz">How far ahead are you deciding, in days <i data-lucide="info" class="hint-icon" title="This is the length of time you are willing to hold off. The system compares booking a ship today against waiting up to this many days for a better price. Thirty days is the usual answer."></i></label>
+          <select id="hz"><option>7</option><option>14</option><option selected>30</option><option>60</option><option>90</option></select>
+        </div>
+      </div>
 
-      <label for="qty">How much do you need, in tonnes</label>
-      <!-- STEP AND MIN MUST AGREE WITH THE DEFAULT VALUE. A number input is valid
-           only at min plus a whole multiple of step. This field used to read
-           min 1000 with step 5000, which makes the nearest valid values 71000 and
-           76000 and therefore makes its OWN DEFAULT of 75000 invalid. The browser
-           then blocked the form submit, no submit event fired at all, and pressing
-           Get recommendation did nothing until the user happened to change the
-           quantity. Changing either number here means rechecking the default. -->
-      <input id="qty" type="number" value="75000" step="1000" min="1000" required
-        aria-describedby="qtyhint">
-      <p class="hint" id="qtyhint">The whole load you want at the plant. One tonne is one
-        thousand kilograms. A typical single shipload here is seventy five thousand tonnes.</p>
-
-      <label for="plant">Which steel plant is it going to</label>
-      <select id="plant"><option value="">I do not mind, choose the cheapest port for me</option></select>
-
-      <label for="hz">How far ahead are you deciding, in days</label>
-      <select id="hz"><option>7</option><option>14</option><option selected>30</option>
-        <option>60</option><option>90</option></select>
-      <p class="hint" id="hzhint">This is the length of time you are willing to hold off. The
-        system compares booking a ship today against waiting up to this many days for a better
-        price. Thirty days is the usual answer.</p>
-
-      <button class="go" id="runbtn" type="submit">Get recommendation</button>
-      <p class="hint">Choosing this compares every ship against every port and ranks them by
-        the cost of one delivered tonne. It takes a few seconds. The answer appears on the
-        right of this screen, or below this box on a narrow display.</p>
+      <div class="form-actions">
+        <button class="go" id="runbtn" type="submit">Get recommendation</button>
+        <i data-lucide="info" class="hint-icon" title="Choosing this compares every ship against every port and ranks them by the cost of one delivered tonne. It takes a few seconds."></i>
+      </div>
     </form>
   </div>
 
@@ -279,42 +276,49 @@
     <h2 class="card-title">Your buying programme</h2>
     <div class="sub" style="margin-bottom:2px">What you need over the coming months, not
       what you need in one ship.</div>
-    <form id="pgform">
-      <label for="pg_origin">Which country is it coming from</label>
-      <select id="pg_origin"></select>
-
-      <label for="pg_cargo">What material are you buying</label>
-      <select id="pg_cargo"></select>
-
-      <label for="pg_plant">Which steel plant is it going to</label>
-      <select id="pg_plant"><option value="">I do not mind, choose the cheapest port</option></select>
-
-      <label for="pg_qty">How much in total, in tonnes</label>
-      <input id="pg_qty" type="number" value="600000" step="10000" min="10000" required
-        aria-describedby="pg_qty_h">
-      <p class="hint" id="pg_qty_h">The whole quantity for the period, across every
-        shipload. Six hundred thousand tonnes is roughly nine Panamax loads.</p>
-
-      <label for="pg_days">Over what period</label>
-      <select id="pg_days">
-        <option value="90">Three months</option>
-        <option value="180" selected>Six months</option>
-        <option value="270">Nine months</option>
-        <option value="365">One year</option>
-      </select>
-
-      <label for="pg_term">Term rate you have been offered, as a percentage of today's
-        spot rate</label>
-      <input id="pg_term" type="number" value="" step="1" min="20" max="300"
-        placeholder="leave empty if you have no offer yet" aria-describedby="pg_term_h">
-      <p class="hint" id="pg_term_h">If an owner has quoted you a rate, put it here as a
-        percentage of today's spot rate. 105 means five percent above today. 95 means five
-        percent below. Leave it empty and the comparison assumes an offer at exactly
-        today's rate, and tells you the highest rate that would still be worth signing.</p>
-
-      <button class="go" id="pgbtn" type="submit">Compare spot against a term contract</button>
-      <p class="hint">This does not send anything to anybody. It prices your programme
-        three ways and shows the three side by side.</p>
+    <form id="pgform" class="form-grid">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="pg_origin">Which country is it coming from</label>
+          <select id="pg_origin"></select>
+        </div>
+        <div class="form-group">
+          <label for="pg_cargo">What material are you buying</label>
+          <select id="pg_cargo"></select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="pg_qty">How much in total, in tonnes <i data-lucide="info" class="hint-icon" title="The whole quantity for the period, across every shipload. Six hundred thousand tonnes is roughly nine Panamax loads."></i></label>
+          <input id="pg_qty" type="number" value="600000" step="10000" min="10000" required>
+        </div>
+        <div class="form-group">
+          <label for="pg_plant">Which steel plant is it going to</label>
+          <select id="pg_plant"><option value="">I do not mind, choose the cheapest port</option></select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="pg_days">Over what period</label>
+          <select id="pg_days">
+            <option value="90">Three months</option>
+            <option value="180" selected>Six months</option>
+            <option value="270">Nine months</option>
+            <option value="365">One year</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="pg_term">Term rate offer (percentage) <i data-lucide="info" class="hint-icon" title="If an owner has quoted you a rate, put it here as a percentage of today's spot rate. 105 means five percent above today. 95 means five percent below. Leave it empty and the comparison assumes an offer at exactly today's rate."></i></label>
+          <input id="pg_term" type="number" value="" step="1" min="20" max="300" placeholder="e.g. 105 or leave empty">
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button class="go" id="pgbtn" type="submit">Compare spot against a term contract</button>
+        <i data-lucide="info" class="hint-icon" title="This does not send anything to anybody. It prices your programme three ways and shows the three side by side."></i>
+      </div>
     </form>
   </div>
 
@@ -818,10 +822,9 @@ function syncCargo() {
   if (!origin) return;
   origin.cargo.forEach(c => sel.add(new Option(prettyCargo(c), c)));
   if (origin.cargo.includes(previous)) sel.value = previous;
-  $("originhint").textContent =
+  $("originhint").title =
     `${origin.name} ships ${plural(origin.cargo.length, "of the materials", "of the materials")} `
     + `this system knows about, so only those are offered in the box below.`;
-  glossifyElement($("originhint"));
   showStowage();
 }
 
@@ -844,8 +847,8 @@ function syncProgrammeCargo() {
 function showStowage() {
   const c = cargoRec($("cargo").value);
   const el = $("cargohint");
-  if (!c) { el.textContent = ""; return; }
-  el.textContent =
+  if (!c) { el.title = ""; return; }
+  el.title =
     `One tonne of this takes up ${c.stowage_factor_m3_per_t} cubic metres of space in the hold, `
     + `which is what a stowage factor means. ` +
     (c.stowage_factor_m3_per_t < 0.9
@@ -855,7 +858,6 @@ function showStowage() {
         + "is allowed to carry. It cubes out, and then it sails lighter than it could.") +
     ` Ports handle it at ${Number(c.handling_rate_multiplier).toFixed(2)} times their normal `
     + `unloading speed.`;
-  glossifyElement(el);
 }
 
 function tab(id, el) {
@@ -971,22 +973,16 @@ function draftScale(o) {
   </svg></div>`;
 }
 
-/* The route, drawn as a passage plan.
-
-   A voyage is read down a page, not across one: origin, then the sea leg and its
-   distance, then the discharge port, then the inland leg, then the plant. Laying it
-   out vertically also survives a long port name, which the horizontal version did
-   not, and it reads correctly aloud in the same order. */
 function routeLine(o, plant) {
-  const rows = [];
-  rows.push(`<li class="node">${escapeHTML(o.origin)}</li>`);
-  rows.push(`<li class="leg sea"><span class="len">${tonnes(o.distance_nm)} nautical miles by sea</span></li>`);
-  rows.push(`<li class="node dest">${escapeHTML(o.discharge_port)}</li>`);
+  const steps = [];
+  steps.push(`<div class="route-step"><i data-lucide="map-pin"></i> <span>${escapeHTML(o.origin)}</span></div>`);
+  steps.push(`<div class="route-line"><span class="route-label">${tonnes(o.distance_nm)} nm</span></div>`);
+  steps.push(`<div class="route-step"><i data-lucide="anchor"></i> <span>${escapeHTML(o.discharge_port)}</span></div>`);
   if (plant && o.inland_km) {
-    rows.push(`<li class="leg"><span class="len">${tonnes(o.inland_km)} km inland</span></li>`);
-    rows.push(`<li class="node">${escapeHTML(plant)}</li>`);
+    steps.push(`<div class="route-line dashed"><span class="route-label">${tonnes(o.inland_km)} km</span></div>`);
+    steps.push(`<div class="route-step"><i data-lucide="factory"></i> <span>${escapeHTML(plant)}</span></div>`);
   }
-  return `<div class="route"><ol aria-label="Route">${rows.join("")}</ol></div>`;
+  return `<div class="horizontal-route">${steps.join("")}</div>`;
 }
 
 function render(d) {
@@ -998,17 +994,18 @@ function render(d) {
   let h = `<section class="verdict ${escapeHTML(r.action)}" aria-label="Recommendation">
     <div class="verdict-top">
       <div>
-        <p class="kicker">What we advise you to do</p>
-        <h3>${escapeHTML(act ? act.title : r.headline)}</h3>
-        ${act ? `<p class="what">${escapeHTML(act.plain)}</p>` : ""}
-        ${best ? `<p class="why">Hire one <b>${escapeHTML(best.vessel_class)}</b> and unload it at
-          <b>${escapeHTML(best.discharge_port)}</b>. ${escapeHTML(sentence(r.reason))}</p>`
-               : `<p class="why">${escapeHTML(sentence(r.reason))}</p>`}
+        <div style="margin-bottom: 12px;"><span class="tag-pill tag-${r.action === 'fix_now' ? 'safe' : 'warn'}" style="font-size: 14px; font-weight: 600; padding: 6px 12px; background: var(--${r.action === 'fix_now' ? 'starboard' : 'buoy'}); color: white; border-radius: 9999px;">Action: ${escapeHTML(act ? act.title : r.headline)}</span></div>
+        ${act ? `<p class="what" style="font-size: 18px; font-weight: 600;">${escapeHTML(act.plain)}</p>` : ""}
+        ${best ? `<p class="why" style="font-size: 16px; color: var(--sounding); max-width: 600px;">Hire one <b>${escapeHTML(best.vessel_class)}</b> and unload it at <b>${escapeHTML(best.discharge_port)}</b>.</p>` : ""}
+        
+        <details class="forecast-details" style="margin-top: 16px;">
+          <summary style="cursor: pointer; font-weight: 600; color: var(--shallows);">✨ View AI Reasoning</summary>
+          <p style="margin-top: 8px; color: var(--sounding); font-size: 14px; max-width: 600px; line-height: 1.5;">${escapeHTML(sentence(r.reason))}</p>
+        </details>
       </div>
       ${best ? `<p class="headline-price">
         <span class="amt">${money(best.landed_cost_usd_per_tonne)}</span>
-        <span class="unit">is what one tonne costs by the time it reaches the plant gate</span>
-        <span class="inr">${inr(best.landed_cost_inr_per_tonne)} a tonne</span>
+        <span class="inr">${inr(best.landed_cost_inr_per_tonne)} / tonne</span>
       </p>` : ""}
     </div>
     ${best ? routeLine(best, plant) : ""}
@@ -1043,8 +1040,16 @@ function render(d) {
     d.options.forEach((o, i) => {
       const b = o.cost_breakdown_usd_per_tonne, t = o.time_breakdown_days;
       h += `<article class="opt ${i === 0 ? "best" : ""}">
-        ${draftScale(o)}
-        <div>
+        <div class="progress-bar-container" style="margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--sounding); margin-bottom: 4px; font-weight: 500;">
+            <span>Capacity Utilization</span>
+            <span>${o.load_percentage}%</span>
+          </div>
+          <div class="progress-track" style="height: 8px; background: var(--shoal); border-radius: 4px; overflow: hidden;">
+            <div class="progress-fill" style="height: 100%; width: ${o.load_percentage}%; background: var(--starboard); border-radius: 4px;"></div>
+          </div>
+        </div>
+        
         <div class="opt-top">
           <div>
             <h3 class="opt-name">${i === 0 ? '<span class="rank">Best</span>' : ""}${escapeHTML(o.vessel_class)}
@@ -1057,22 +1062,33 @@ function render(d) {
             <span class="unit">${inr(o.landed_cost_inr_per_tonne)} for each tonne</span>
           </p>
         </div>
-        <ul class="meta">
-          <li>Actually carries <b>${tonnes(o.deliverable_tonnes)} tonnes</b>
-            out of a possible <b>${tonnes(o.nominal_capacity_tonnes)}</b></li>
-          <li>So it sails <b>${o.load_percentage}%</b> full</li>
-          <li>The whole trip takes <b>${o.total_days} days</b></li>
-          <li>Hiring the ship costs <b>$${Number(o.tce_usd_per_day).toLocaleString("en-US")} a day</b></li>
-          ${o.demand_rank ? `<li>This port's own demand rank for your material is
-            <b>${o.demand_rank}</b></li>` : ""}
-        </ul>
-        <ul class="flags">
-          ${o.cubes_out ? `<li><span class="flag-cube">Cubes out, so hold space runs out
-            before weight does</span></li>` : ""}
-          <li><span class="wx ${escapeHTML(o.weather_risk_band || "unknown")}">Weather risk
-            ${escapeHTML(o.weather_risk_band || "unknown")}${o.weather_delay_days
-              ? `, expect to lose ${plural(o.weather_delay_days, "day")}`
-              : ""}</span></li>
+        
+        <div class="data-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-top: 16px; padding: 16px; background: #fafafa; border-radius: 8px; border: 1px solid var(--drying);">
+          <div>
+            <div style="color: var(--sounding); font-size: 13px; display: flex; align-items: center; gap: 6px;"><i data-lucide="package" style="width: 14px; height: 14px;"></i> Payload</div>
+            <div style="font-size: 15px; font-weight: 600; color: var(--chartwhite); margin-top: 4px;">${tonnes(o.deliverable_tonnes)} t</div>
+          </div>
+          <div>
+            <div style="color: var(--sounding); font-size: 13px; display: flex; align-items: center; gap: 6px;"><i data-lucide="clock" style="width: 14px; height: 14px;"></i> Transit</div>
+            <div style="font-size: 15px; font-weight: 600; color: var(--chartwhite); margin-top: 4px;">${o.total_days} days</div>
+          </div>
+          <div>
+            <div style="color: var(--sounding); font-size: 13px; display: flex; align-items: center; gap: 6px;"><i data-lucide="dollar-sign" style="width: 14px; height: 14px;"></i> Charter Rate</div>
+            <div style="font-size: 15px; font-weight: 600; color: var(--chartwhite); margin-top: 4px;">$${Number(o.tce_usd_per_day).toLocaleString("en-US")} / day</div>
+          </div>
+          ${o.demand_rank ? `
+          <div>
+            <div style="color: var(--sounding); font-size: 13px; display: flex; align-items: center; gap: 6px;"><i data-lucide="bar-chart-2" style="width: 14px; height: 14px;"></i> Port Demand</div>
+            <div style="font-size: 15px; font-weight: 600; color: var(--chartwhite); margin-top: 4px;">Rank ${o.demand_rank}</div>
+          </div>` : ""}
+        </div>
+
+        <ul class="flags" style="display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; list-style: none; padding: 0;">
+          ${o.cubes_out ? `<li><span class="tag-pill tag-warn" style="font-size: 13px; font-weight: 500; padding: 4px 10px; background: var(--buoy); color: white; border-radius: 9999px;">Cubes out (volume limit)</span></li>` : ""}
+          <li><span class="tag-pill tag-${o.weather_risk_band === 'clear' ? 'safe' : 'warn'}" style="font-size: 13px; font-weight: 500; padding: 4px 10px; background: var(--${o.weather_risk_band === 'clear' ? 'starboard' : 'buoy'}); color: white; border-radius: 9999px;">
+            Weather: ${escapeHTML(o.weather_risk_band || "unknown")}
+            ${o.weather_delay_days ? ` (${plural(o.weather_delay_days, "day")} delay)` : ""}
+          </span></li>
         </ul>
         ${o.operator_declared ? `<div class="decl">
           <b>Declared by the port operator.</b>
