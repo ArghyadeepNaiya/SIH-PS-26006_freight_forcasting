@@ -14,8 +14,14 @@ body { accent-color: var(--shallows); }
 .input-wrapper:focus-within .input-icon { color: var(--shallows); }
 .input-wrapper input, .input-wrapper select { padding-left: 38px; width: 100%; transition: all 0.2s ease; cursor: pointer; min-height: 48px; box-sizing: border-box; font-size: 16px; }
 .input-wrapper input:focus, .input-wrapper select:focus { border-color: var(--shallows); box-shadow: inset 0 0 0 1px var(--shallows); outline: none; }
-.interactive-card { transition: all 0.2s cubic-bezier(0.2, 0.7, 0.3, 1); }
-.interactive-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.05); border-color: var(--shallows); }
+.interactive-card { transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.premium-card { background: var(--shoal) !important; border: 1px solid rgba(255, 255, 255, 0.05) !important; box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.15) !important; border-radius: 8px; padding: 24px; position: relative; transition: all 0.2s ease; }
+.premium-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.25) !important; border-color: rgba(255,255,255,0.12) !important; }
+.grid-single-column { display: grid; grid-template-columns: 1fr !important; gap: 32px; }
+.horizontal-form { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end; }
+.horizontal-form .form-row { flex: 1 1 250px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 0; }
+.horizontal-form .form-actions { width: 100%; display: flex; justify-content: flex-end; align-items: center; margin-top: 8px; }
+.horizontal-form .btn.go { width: auto; padding: 0 40px; margin-top: 0; }
 .btn.go { display: inline-flex; align-items: center; gap: 8px; justify-content: center; width: 100%; margin-top: 24px; min-height: 48px; }
 .btn.go:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(85, 28, 138, 0.4); }
 .btn.go i { width: 18px; height: 18px; transition: transform 0.2s ease; }
@@ -62,12 +68,12 @@ body { accent-color: var(--shallows); }
 <!-- ============ SCREEN 0. DECISION CONSOLE ============ -->
 <section class="page" id="p0" aria-label="Get a recommendation">
 
-<div class="grid">
-  <div class="card interactive-card">
+<div class="grid grid-single-column">
+  <div class="card premium-card interactive-card">
     <h2 class="card-title">What do you need delivered</h2>
-    <div class="sub" style="margin-bottom:12px">Five questions. Everything else is filled in
+    <div class="sub" style="margin-bottom:16px">Five questions. Everything else is filled in
       for you and can be changed later.</div>
-    <form id="cargoform" class="form-grid">
+    <form id="cargoform" class="horizontal-form">
       <div class="form-row">
         <div class="form-group">
           <label for="origin">Which country is the cargo coming from <i data-lucide="info" class="hint-icon" id="originhint"></i></label>
@@ -102,7 +108,7 @@ body { accent-color: var(--shallows); }
         </div>
       </div>
 
-      <div class="form-row">
+      <div class="form-row" style="flex: 0 1 250px;">
         <div class="form-group">
           <label for="hz">How far ahead are you deciding, in days <i data-lucide="info" class="hint-icon" title="This is the length of time you are willing to hold off. The system compares booking a ship today against waiting up to this many days for a better price. Thirty days is the usual answer."></i></label>
           <div class="input-wrapper">
@@ -113,14 +119,14 @@ body { accent-color: var(--shallows); }
       </div>
 
       <div class="form-actions">
-        <button class="btn go" id="runbtn" type="submit" style="margin-top: 0">Get recommendation <i data-lucide="arrow-right"></i></button>
         <i data-lucide="info" class="hint-icon" title="Choosing this compares every ship against every port and ranks them by the cost of one delivered tonne. It takes a few seconds."></i>
+        <button class="btn go" id="runbtn" type="submit">Get recommendation <i data-lucide="arrow-right"></i></button>
       </div>
     </form>
   </div>
 
   <div id="out" aria-live="polite" aria-busy="false">
-    <div class="empty">Nothing has been worked out yet. Fill in the boxes on the left and
+    <div class="empty">Nothing has been worked out yet. Fill in the boxes above and
       choose <b>Get recommendation</b>. You will then get one clear recommendation at the top,
       then every workable ship and port pairing in order of cost, and then the pairings that
       were ruled out with the reason each one was ruled out.</div>
@@ -275,12 +281,12 @@ body { accent-color: var(--shallows); }
 <!-- ============ SCREEN 5. CONTRACT PROGRAMME ============ -->
 <section class="page" id="p5" hidden aria-label="Plan a contract programme">
 
-<div class="grid">
-  <div class="card interactive-card">
+<div class="grid grid-single-column">
+  <div class="card premium-card interactive-card">
     <h2 class="card-title">Your buying programme</h2>
-    <div class="sub" style="margin-bottom:12px">What you need over the coming months, not
+    <div class="sub" style="margin-bottom:16px">What you need over the coming months, not
       what you need in one ship.</div>
-    <form id="pgform" class="form-grid">
+    <form id="pgform" class="horizontal-form">
       <div class="form-row">
         <div class="form-group">
           <label for="pg_origin">Which country is it coming from</label>
@@ -338,14 +344,14 @@ body { accent-color: var(--shallows); }
       </div>
       
       <div class="form-actions">
-        <button class="btn go" id="pgbtn" type="submit" style="margin-top: 0">Compare options <i data-lucide="arrow-right"></i></button>
         <i data-lucide="info" class="hint-icon" title="This does not send anything to anybody. It prices your programme three ways and shows the three side by side."></i>
+        <button class="btn go" id="pgbtn" type="submit">Compare options <i data-lucide="arrow-right"></i></button>
       </div>
     </form>
   </div>
 
   <div id="pgout" aria-live="polite" aria-busy="false">
-    <div class="empty">Nothing has been worked out yet. Fill in the boxes on the left and
+    <div class="empty">Nothing has been worked out yet. Fill in the boxes above and
       choose <b>Compare options</b>.</div>
   </div>
 </div>
@@ -434,6 +440,9 @@ body { accent-color: var(--shallows); }
 </div>
 </section>
 
+<button class="back-to-top" id="backToTop" aria-label="Back to top" title="Back to top">
+  <i data-lucide="arrow-up"></i>
+</button>
 </main>
 </div>
 </div>
@@ -2021,5 +2030,17 @@ function renderPorts() {
 }
 
 boot();
+
+const btt = $("backToTop");
+if (btt) {
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 300) btt.classList.add("visible");
+    else btt.classList.remove("visible");
+  });
+  btt.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
+
 lucide.createIcons();
 </script></body></html>
