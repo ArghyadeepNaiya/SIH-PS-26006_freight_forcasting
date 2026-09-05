@@ -3,6 +3,26 @@
 <title>Freight Charter Decision Console</title>
 <script src="https://unpkg.com/lucide@latest"></script>
 <link rel="stylesheet" href="/static/app.css">
+<style>
+/* Interactive UI Additions & UX Improvements */
+body { accent-color: var(--shallows); }
+.form-group { margin-bottom: 8px; }
+.form-group label { margin-bottom: 4px; display: inline-block; padding: 2px 0; }
+.input-wrapper { position: relative; display: flex; align-items: center; transition: all 0.2s ease; }
+.input-wrapper:focus-within { transform: translateY(-1px); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
+.input-icon { position: absolute; left: 12px; width: 18px; height: 18px; color: var(--sounding); pointer-events: none; transition: color 0.2s ease; }
+.input-wrapper:focus-within .input-icon { color: var(--shallows); }
+.input-wrapper input, .input-wrapper select { padding-left: 38px; width: 100%; transition: all 0.2s ease; cursor: pointer; min-height: 48px; box-sizing: border-box; font-size: 16px; }
+.input-wrapper input:focus, .input-wrapper select:focus { border-color: var(--shallows); box-shadow: inset 0 0 0 1px var(--shallows); outline: none; }
+.interactive-card { transition: all 0.2s cubic-bezier(0.2, 0.7, 0.3, 1); }
+.interactive-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.05); border-color: var(--shallows); }
+.btn.go { display: inline-flex; align-items: center; gap: 8px; justify-content: center; width: 100%; margin-top: 24px; min-height: 48px; }
+.btn.go:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(85, 28, 138, 0.4); }
+.btn.go i { width: 18px; height: 18px; transition: transform 0.2s ease; }
+.btn.go:hover i { transform: translateX(3px); }
+.form-actions { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+.explain { margin-top: 32px; margin-bottom: 0; }
+</style>
 </head><body>
 
 <a class="skip" href="#main">Skip to main content</a>
@@ -42,6 +62,71 @@
 <!-- ============ SCREEN 0. DECISION CONSOLE ============ -->
 <section class="page" id="p0" aria-label="Get a recommendation">
 
+<div class="grid">
+  <div class="card interactive-card">
+    <h2 class="card-title">What do you need delivered</h2>
+    <div class="sub" style="margin-bottom:12px">Five questions. Everything else is filled in
+      for you and can be changed later.</div>
+    <form id="cargoform" class="form-grid">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="origin">Which country is the cargo coming from <i data-lucide="info" class="hint-icon" id="originhint"></i></label>
+          <div class="input-wrapper">
+            <i data-lucide="globe" class="input-icon"></i>
+            <select id="origin"></select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="cargo">What material are you buying <i data-lucide="info" class="hint-icon" id="cargohint"></i></label>
+          <div class="input-wrapper">
+            <i data-lucide="package" class="input-icon"></i>
+            <select id="cargo"></select>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="qty">How much do you need, in tonnes <i data-lucide="info" class="hint-icon" title="The whole load you want at the plant. One tonne is one thousand kilograms. A typical single shipload here is seventy five thousand tonnes."></i></label>
+          <div class="input-wrapper">
+            <i data-lucide="weight" class="input-icon"></i>
+            <input id="qty" type="number" value="75000" step="1000" min="1000" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="plant">Which steel plant is it going to</label>
+          <div class="input-wrapper">
+            <i data-lucide="factory" class="input-icon"></i>
+            <select id="plant"><option value="">I do not mind, choose the cheapest port for me</option></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="hz">How far ahead are you deciding, in days <i data-lucide="info" class="hint-icon" title="This is the length of time you are willing to hold off. The system compares booking a ship today against waiting up to this many days for a better price. Thirty days is the usual answer."></i></label>
+          <div class="input-wrapper">
+            <i data-lucide="calendar-clock" class="input-icon"></i>
+            <select id="hz"><option>7</option><option>14</option><option selected>30</option><option>60</option><option>90</option></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn go" id="runbtn" type="submit" style="margin-top: 0">Get recommendation <i data-lucide="arrow-right"></i></button>
+        <i data-lucide="info" class="hint-icon" title="Choosing this compares every ship against every port and ranks them by the cost of one delivered tonne. It takes a few seconds."></i>
+      </div>
+    </form>
+  </div>
+
+  <div id="out" aria-live="polite" aria-busy="false">
+    <div class="empty">Nothing has been worked out yet. Fill in the boxes on the left and
+      choose <b>Get recommendation</b>. You will then get one clear recommendation at the top,
+      then every workable ship and port pairing in order of cost, and then the pairings that
+      were ruled out with the reason each one was ruled out.</div>
+  </div>
+</div>
+
 <div class="explain">
   <h2>What this screen does, in plain words</h2>
   <p>You need to buy raw material from overseas and land it at an Indian steel plant. Before
@@ -60,71 +145,10 @@
   <p>Nothing is ordered and no message is sent to anybody. This screen only produces advice
     that you read here.</p>
 </div>
-
-<div class="grid">
-  <div class="card">
-    <h2 class="card-title">What do you need delivered</h2>
-    <div class="sub" style="margin-bottom:2px">Five questions. Everything else is filled in
-      for you and can be changed later.</div>
-    <form id="cargoform" class="form-grid">
-      <div class="form-row">
-        <div class="form-group">
-          <label for="origin">Which country is the cargo coming from <i data-lucide="info" class="hint-icon" id="originhint"></i></label>
-          <select id="origin"></select>
-        </div>
-        <div class="form-group">
-          <label for="cargo">What material are you buying <i data-lucide="info" class="hint-icon" id="cargohint"></i></label>
-          <select id="cargo"></select>
-        </div>
-      </div>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label for="qty">How much do you need, in tonnes <i data-lucide="info" class="hint-icon" title="The whole load you want at the plant. One tonne is one thousand kilograms. A typical single shipload here is seventy five thousand tonnes."></i></label>
-          <input id="qty" type="number" value="75000" step="1000" min="1000" required>
-        </div>
-        <div class="form-group">
-          <label for="plant">Which steel plant is it going to</label>
-          <select id="plant"><option value="">I do not mind, choose the cheapest port for me</option></select>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label for="hz">How far ahead are you deciding, in days <i data-lucide="info" class="hint-icon" title="This is the length of time you are willing to hold off. The system compares booking a ship today against waiting up to this many days for a better price. Thirty days is the usual answer."></i></label>
-          <select id="hz"><option>7</option><option>14</option><option selected>30</option><option>60</option><option>90</option></select>
-        </div>
-      </div>
-
-      <div class="form-actions">
-        <button class="go" id="runbtn" type="submit">Get recommendation</button>
-        <i data-lucide="info" class="hint-icon" title="Choosing this compares every ship against every port and ranks them by the cost of one delivered tonne. It takes a few seconds."></i>
-      </div>
-    </form>
-  </div>
-
-  <div id="out" aria-live="polite" aria-busy="false">
-    <div class="empty">Nothing has been worked out yet. Fill in the boxes on the left and
-      choose <b>Get recommendation</b>. You will then get one clear recommendation at the top,
-      then every workable ship and port pairing in order of cost, and then the pairings that
-      were ruled out with the reason each one was ruled out.</div>
-  </div>
-</div></section>
+</section>
 
 <!-- ============ SCREEN 1. MARKET AND FORECAST ============ -->
 <section class="page" id="p1" hidden aria-label="Prices and forecast">
-
-<div class="explain">
-  <h2>What this screen does, in plain words</h2>
-  <p>The price of hiring a ship moves every day, in much the same way the price of an air
-    ticket does. This screen shows what that price has done over the last two years for each
-    size of ship, and what our computer model expects it to do next.</p>
-  <p>It also does something that most tools quietly avoid. It tells you whether our own
-    forecast is worth listening to at all. It does that by testing our model against the
-    laziest forecast anyone could make, which is to say that tomorrow's price will be whatever
-    today's price is. A forecast that cannot beat that lazy guess is not adding anything, and
-    when ours cannot beat it we say so on this screen instead of hiding it.</p>
-</div>
 
   <div id="skillwarn"></div>
   <div class="card">
@@ -171,27 +195,47 @@
   <div id="timing" aria-live="polite">
     <div class="empty">Loading the timing scan.</div>
   </div>
+
+<div class="explain">
+  <h2>What this screen does, in plain words</h2>
+  <p>The price of hiring a ship moves every day, in much the same way the price of an air
+    ticket does. This screen shows what that price has done over the last two years for each
+    size of ship, and what our computer model expects it to do next.</p>
+  <p>It also does something that most tools quietly avoid. It tells you whether our own
+    forecast is worth listening to at all. It does that by testing our model against the
+    laziest forecast anyone could make, which is to say that tomorrow's price will be whatever
+    today's price is. A forecast that cannot beat that lazy guess is not adding anything, and
+    when ours cannot beat it we say so on this screen instead of hiding it.</p>
+</div>
 </section>
 
 <!-- ============ SCREEN 2. PORT INTELLIGENCE ============ -->
 <section class="page" id="p2" hidden aria-label="What each port can take">
-
-<div class="explain">
-<div class="explain">
-  <p class="lead" style="font-size: 18px; font-weight: 500; color: var(--chartwhite); margin-bottom: 24px;">
-    Physical infrastructure limits and historical waiting times for East Coast ports.
-  </p>
-</div>
 
   <div class="warnbox global-warn" style="background: var(--shoal); color: var(--chartwhite); border: 1px solid var(--buoy); border-left: 4px solid var(--buoy); padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
     <i data-lucide="alert-triangle" style="color: var(--buoy); width: 20px; height: 20px;"></i>
     <span style="font-size: 14px;"><strong>Disclaimer:</strong> Any metric marked with a warning icon is an unverified assumption used for demonstration purposes. It has not been confirmed against a published document.</span>
   </div>
   <div class="pgrid" id="ports" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px;"></div>
+
+<div class="explain">
+  <p class="lead" style="font-size: 18px; font-weight: 500; color: var(--chartwhite); margin-bottom: 24px;">
+    Physical infrastructure limits and historical waiting times for East Coast ports.
+  </p>
+</div>
 </section>
 
 <!-- ============ SCREEN 3. PORT CAPACITY AND WEATHER ============ -->
 <section class="page" id="p3" hidden aria-label="Live port space and weather">
+
+  <div class="btnrow" style="margin:0 0 22px">
+    <button type="button" class="btn quiet" id="wxrefresh">Get the latest weather for every
+      port now</button>
+  </div>
+  <div id="portlive" aria-live="polite">
+    <div class="empty">Loading what the ports have stated and what the weather is expected to
+      do.</div>
+  </div>
 
 <div class="explain">
   <h2>What this screen does, in plain words</h2>
@@ -209,19 +253,13 @@
   <p>What a port operator states here is their own claim about their own port. It is not a
     published figure from the port authority, and this screen never pretends otherwise.</p>
 </div>
-
-  <div class="btnrow" style="margin:0 0 22px">
-    <button type="button" class="btn quiet" id="wxrefresh">Get the latest weather for every
-      port now</button>
-  </div>
-  <div id="portlive" aria-live="polite">
-    <div class="empty">Loading what the ports have stated and what the weather is expected to
-      do.</div>
-  </div>
 </section>
 
 <!-- ============ SCREEN 4. PLAIN WORD LIST ============ -->
 <section class="page" id="p4" hidden aria-label="Plain word list">
+
+  <h2>Every word this system uses</h2>
+  <ol class="gloss" id="glosslist"></ol>
 
 <div class="explain">
   <h2>What this screen does, in plain words</h2>
@@ -232,13 +270,85 @@
     appear on a screen. Resting the mouse pointer on one of them shows a short version of the
     explanation you will find here.</p>
 </div>
-
-  <h2>Every word this system uses</h2>
-  <ol class="gloss" id="glosslist"></ol>
 </section>
 
 <!-- ============ SCREEN 5. CONTRACT PROGRAMME ============ -->
 <section class="page" id="p5" hidden aria-label="Plan a contract programme">
+
+<div class="grid">
+  <div class="card interactive-card">
+    <h2 class="card-title">Your buying programme</h2>
+    <div class="sub" style="margin-bottom:12px">What you need over the coming months, not
+      what you need in one ship.</div>
+    <form id="pgform" class="form-grid">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="pg_origin">Which country is it coming from</label>
+          <div class="input-wrapper">
+            <i data-lucide="globe" class="input-icon"></i>
+            <select id="pg_origin"></select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="pg_cargo">What material are you buying</label>
+          <div class="input-wrapper">
+            <i data-lucide="package" class="input-icon"></i>
+            <select id="pg_cargo"></select>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="pg_qty">How much in total, in tonnes <i data-lucide="info" class="hint-icon" title="The whole quantity for the period, across every shipload. Six hundred thousand tonnes is roughly nine Panamax loads."></i></label>
+          <div class="input-wrapper">
+            <i data-lucide="weight" class="input-icon"></i>
+            <input id="pg_qty" type="number" value="600000" step="10000" min="10000" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="pg_plant">Which steel plant is it going to</label>
+          <div class="input-wrapper">
+            <i data-lucide="factory" class="input-icon"></i>
+            <select id="pg_plant"><option value="">I do not mind, choose the cheapest port</option></select>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="pg_days">Over what period</label>
+          <div class="input-wrapper">
+            <i data-lucide="calendar-days" class="input-icon"></i>
+            <select id="pg_days">
+              <option value="90">Three months</option>
+              <option value="180" selected>Six months</option>
+              <option value="270">Nine months</option>
+              <option value="365">One year</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="pg_term">Term rate offer (%) <i data-lucide="info" class="hint-icon" title="If an owner has quoted you a rate, put it here as a percentage of today's spot rate. 105 means five percent above today. 95 means five percent below. Leave it empty and the comparison assumes an offer at exactly today's rate."></i></label>
+          <div class="input-wrapper">
+            <i data-lucide="percent" class="input-icon"></i>
+            <input id="pg_term" type="number" value="" step="1" min="20" max="300" placeholder="e.g. 105 or leave empty">
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button class="btn go" id="pgbtn" type="submit" style="margin-top: 0">Compare options <i data-lucide="arrow-right"></i></button>
+        <i data-lucide="info" class="hint-icon" title="This does not send anything to anybody. It prices your programme three ways and shows the three side by side."></i>
+      </div>
+    </form>
+  </div>
+
+  <div id="pgout" aria-live="polite" aria-busy="false">
+    <div class="empty">Nothing has been worked out yet. Fill in the boxes on the left and
+      choose <b>Compare options</b>.</div>
+  </div>
+</div>
 
 <div class="explain">
   <h2>What this screen does, in plain words</h2>
@@ -263,66 +373,19 @@
     actually done over every period of this length in its whole history, and asks whether
     the rate on offer beats that record.</p>
 </div>
-
-<div class="grid">
-  <div class="card">
-    <h2 class="card-title">Your buying programme</h2>
-    <div class="sub" style="margin-bottom:2px">What you need over the coming months, not
-      what you need in one ship.</div>
-    <form id="pgform" class="form-grid">
-      <div class="form-row">
-        <div class="form-group">
-          <label for="pg_origin">Which country is it coming from</label>
-          <select id="pg_origin"></select>
-        </div>
-        <div class="form-group">
-          <label for="pg_cargo">What material are you buying</label>
-          <select id="pg_cargo"></select>
-        </div>
-      </div>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label for="pg_qty">How much in total, in tonnes <i data-lucide="info" class="hint-icon" title="The whole quantity for the period, across every shipload. Six hundred thousand tonnes is roughly nine Panamax loads."></i></label>
-          <input id="pg_qty" type="number" value="600000" step="10000" min="10000" required>
-        </div>
-        <div class="form-group">
-          <label for="pg_plant">Which steel plant is it going to</label>
-          <select id="pg_plant"><option value="">I do not mind, choose the cheapest port</option></select>
-        </div>
-      </div>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label for="pg_days">Over what period</label>
-          <select id="pg_days">
-            <option value="90">Three months</option>
-            <option value="180" selected>Six months</option>
-            <option value="270">Nine months</option>
-            <option value="365">One year</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="pg_term">Term rate offer (percentage) <i data-lucide="info" class="hint-icon" title="If an owner has quoted you a rate, put it here as a percentage of today's spot rate. 105 means five percent above today. 95 means five percent below. Leave it empty and the comparison assumes an offer at exactly today's rate."></i></label>
-          <input id="pg_term" type="number" value="" step="1" min="20" max="300" placeholder="e.g. 105 or leave empty">
-        </div>
-      </div>
-      
-      <div class="form-actions">
-        <button class="go" id="pgbtn" type="submit">Compare spot against a term contract</button>
-        <i data-lucide="info" class="hint-icon" title="This does not send anything to anybody. It prices your programme three ways and shows the three side by side."></i>
-      </div>
-    </form>
-  </div>
-
-  <div id="pgout" aria-live="polite" aria-busy="false">
-    <div class="empty">Nothing has been worked out yet. Fill in the boxes on the left and
-      choose <b>Compare spot against a term contract</b>.</div>
-  </div>
-</div></section>
+</section>
 
 <!-- ============ SCREEN 6. COMPARE SUPPLY COUNTRIES ============ -->
 <section class="page" id="p6" hidden aria-label="Compare supply countries">
+
+  <div class="btnrow" style="margin:0 0 22px">
+    <button type="button" class="btn" id="cmpbtn">Price this material from every country</button>
+  </div>
+  <p class="lead">This uses the material, quantity and destination plant you chose on the
+    first screen. Change them there and run this again.</p>
+  <div id="cmpout" aria-live="polite">
+    <div class="empty">Nothing has been compared yet. Choose the button above.</div>
+  </div>
 
 <div class="explain">
   <h2>What this screen does, in plain words</h2>
@@ -336,19 +399,18 @@
     fill the ship, and a half empty ship costs almost as much to sail as a full one. That
     is the effect this screen exists to make visible.</p>
 </div>
-
-  <div class="btnrow" style="margin:0 0 22px">
-    <button type="button" class="btn" id="cmpbtn">Price this material from every country</button>
-  </div>
-  <p class="lead">This uses the material, quantity and destination plant you chose on the
-    first screen. Change them there and run this again.</p>
-  <div id="cmpout" aria-live="polite">
-    <div class="empty">Nothing has been compared yet. Choose the button above.</div>
-  </div>
 </section>
 
 <!-- ============ SCREEN 7. RISKS AND WARNINGS ============ -->
 <section class="page" id="p7" hidden aria-label="Risks and early warnings">
+
+  <div class="btnrow" style="margin:0 0 22px">
+    <button type="button" class="btn quiet" id="riskbtn">Check everything again now</button>
+  </div>
+  <div id="riskout" aria-live="polite">
+    <div class="empty">Checking the market, the forecast, the ports, the weather and the
+      data.</div>
+  </div>
 
 <div class="explain">
   <h2>What this screen does, in plain words</h2>
@@ -370,14 +432,6 @@
   <p>Warnings are sorted with the most serious first. Every one of them names where the
     evidence came from, so none of them has to be taken on trust.</p>
 </div>
-
-  <div class="btnrow" style="margin:0 0 22px">
-    <button type="button" class="btn quiet" id="riskbtn">Check everything again now</button>
-  </div>
-  <div id="riskout" aria-live="polite">
-    <div class="empty">Checking the market, the forecast, the ports, the weather and the
-      data.</div>
-  </div>
 </section>
 
 </main>
