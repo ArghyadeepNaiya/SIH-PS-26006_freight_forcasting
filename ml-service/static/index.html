@@ -177,24 +177,17 @@
 <section class="page" id="p2" hidden aria-label="What each port can take">
 
 <div class="explain">
-  <h2>What this screen does, in plain words</h2>
-  <p>A port cannot accept every ship that turns up. The water in front of it has a certain
-    depth, the berth has a certain length, and a loaded ship that sits deeper in the water than
-    the port is deep cannot get in. This screen lists those physical limits for every east
-    coast port the system considers.</p>
-  <p>This is why the biggest ship is often the wrong answer. A big ship is cheaper for each
-    tonne only if you can fill it. At a shallow port it cannot be filled, and a half empty
-    voyage costs very nearly the same as a full one, so the cost of each tonne actually
-    delivered goes up rather than down.</p>
-  <p>When the recommendation screen refuses a ship, the limit that refused it is on this
-    screen.</p>
+<div class="explain">
+  <p class="lead" style="font-size: 18px; font-weight: 500; color: var(--chartwhite); margin-bottom: 24px;">
+    Physical infrastructure limits and historical waiting times for East Coast ports.
+  </p>
 </div>
 
-  <div class="warnbox"><b>Every number below says where it came from.</b>
-  A number marked assumption is a placeholder we chose ourselves. It has not been confirmed
-  with the port or against a published document, so it must be checked with the port authority
-  before anyone uses this system for a real purchase.</div>
-  <div class="pgrid" id="ports"></div>
+  <div class="warnbox global-warn" style="background: var(--shoal); color: var(--chartwhite); border: 1px solid var(--buoy); border-left: 4px solid var(--buoy); padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+    <i data-lucide="alert-triangle" style="color: var(--buoy); width: 20px; height: 20px;"></i>
+    <span style="font-size: 14px;"><strong>Disclaimer:</strong> Any metric marked with a warning icon is an unverified assumption used for demonstration purposes. It has not been confirmed against a published document.</span>
+  </div>
+  <div class="pgrid" id="ports" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px;"></div>
 </section>
 
 <!-- ============ SCREEN 3. PORT CAPACITY AND WEATHER ============ -->
@@ -1926,23 +1919,51 @@ function renderRisk(d) {
 function renderPorts() {
   $("ports").innerHTML = REF.ports.map(p => {
     const c = p.citations || {};
-    const assumed = Object.values(c).filter(v => String(v).includes("ASSUMPTION")).length;
-    return `<article class="pcard">
-      <h3>${escapeHTML(p.name)}</h3>
-      <div class="sub" style="margin-bottom:10px">${escapeHTML(p.state)} &middot; ${escapeHTML(p.code)}</div>
-      <div class="prow"><span>Deepest ship it can take, its draft</span><b>${p.max_draft_m} m</b></div>
-      <div class="prow"><span>Longest ship it can take</span><b>${p.max_loa_m} m</b></div>
-      <div class="prow"><span>Widest ship it can take, its beam</span><b>${p.max_beam_m} m</b></div>
-      <div class="prow"><span>Biggest ship it can take, by deadweight</span><b>${tonnes(p.max_dwt)} t</b></div>
-      <div class="prow"><span>Can unload at sea into smaller boats</span><b>${p.lightering_available ? "yes" : "no"}</b></div>
-      <div class="prow"><span>How long a ship usually waits to get in</span><b>${p.typical_wait_days} days</b></div>
-      <p class="cite">Where the depth figure came from. ${escapeHTML(c.max_draft_m || "Nothing recorded")}</p>
-      ${assumed ? `<p class="assume">${assumed} of the numbers on this card
-        ${assumed === 1 ? "is a placeholder we chose ourselves and has" : "are placeholders we chose ourselves and have"}
-        not been confirmed with the port.</p>` : ""}
+    
+    const assumeIcon = (key) => c[key] && String(c[key]).includes("ASSUMPTION")
+      ? `<i data-lucide="alert-circle" style="width: 14px; height: 14px; color: var(--buoy); display: inline-block; vertical-align: middle; margin-left: 4px; cursor: help;" title="Unverified Assumption: ${escapeHTML(c[key])}"></i>`
+      : '';
+
+    return `<article class="pcard" style="background: var(--shelf); border: 1px solid var(--drying); border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+        <div>
+          <h3 style="margin: 0; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 18px; color: var(--chartwhite);">${escapeHTML(p.name)}</h3>
+          <div style="color: var(--sounding); font-size: 13px; font-weight: 500; margin-top: 2px;">${escapeHTML(p.state)} &middot; ${escapeHTML(p.code)}</div>
+        </div>
+        <div>
+          ${p.lightering_available 
+            ? `<span style="background: #d1fae5; color: #065f46; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 9999px;">Lighterage: Yes</span>`
+            : `<span style="background: #f3f4f6; color: #4b5563; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 9999px;">Lighterage: No</span>`}
+        </div>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; background: #fafafa; padding: 16px; border-radius: 8px; border: 1px solid var(--drying);">
+        <div>
+          <div style="font-size: 12px; color: var(--sounding);">Max Draft</div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--chartwhite); font-family: 'IBM Plex Mono', monospace;">${p.max_draft_m} m${assumeIcon('max_draft_m')}</div>
+        </div>
+        <div>
+          <div style="font-size: 12px; color: var(--sounding);">Max LOA</div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--chartwhite); font-family: 'IBM Plex Mono', monospace;">${p.max_loa_m} m${assumeIcon('max_loa_m')}</div>
+        </div>
+        <div>
+          <div style="font-size: 12px; color: var(--sounding);">Max Beam</div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--chartwhite); font-family: 'IBM Plex Mono', monospace;">${p.max_beam_m} m${assumeIcon('max_beam_m')}</div>
+        </div>
+        <div>
+          <div style="font-size: 12px; color: var(--sounding);">Max DWT</div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--chartwhite); font-family: 'IBM Plex Mono', monospace;">${tonnes(p.max_dwt)} t${assumeIcon('max_dwt')}</div>
+        </div>
+      </div>
+      
+      <div style="display: flex; align-items: center; gap: 8px; padding-top: 16px; border-top: 1px solid var(--drying);">
+        <i data-lucide="clock" style="width: 16px; height: 16px; color: var(--sounding);"></i>
+        <span style="font-size: 14px; color: var(--sounding);">Waiting Time:</span>
+        <span style="font-size: 14px; font-weight: 700; color: var(--chartwhite); font-family: 'IBM Plex Mono', monospace;">${p.typical_wait_days} days${assumeIcon('typical_wait_days')}</span>
+      </div>
     </article>`;
   }).join("");
-  glossifyElement($("ports"));
+  lucide.createIcons({ root: $("ports") });
 }
 
 boot();
